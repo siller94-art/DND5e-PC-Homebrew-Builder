@@ -141,7 +141,7 @@ class CharacterBuilder extends HandlebarsApplicationMixin(ApplicationV2) {
     return this.render({ force:true });
   }
 
-  static customContent() { return new CustomContentImporter().render({ force:true }); }
+  static customContent() { return new CustomContentImporter({parentBuilder:this}).render({ force:true }); }
 
   async _embed(actor, uuids) {
     for (const uuid of uuids.filter(Boolean)) {
@@ -179,67 +179,44 @@ class CharacterBuilder extends HandlebarsApplicationMixin(ApplicationV2) {
 }
 
 class CustomContentImporter extends HandlebarsApplicationMixin(ApplicationV2) {
-  static DEFAULT_OPTIONS = {
-    id:"dnd5e-pc-custom-content", classes:["dnd5e-pc-character-builder"], tag:"form",
-    window:{title:"Custom PC Content",resizable:true}, position:{width:720,height:650},
-    actions:{save:CustomContentImporter.save}
-  };
-  static PARTS = { form:{template:"modules/dnd5e-pc-homebrew-builder/templates/importer.hbs"} };
-  constructor(options={}) { super(options); this.data={type:"feat",name:"",description:"",identifier:"",classIdentifier:""}; }
-  async _prepareContext() { return { data:this.data, types:["race","background","class","subclass","feat","spell","equipment","weapon","tool","consumable"] }; }
-  _onRender(context,options) {
-    super._onRender(context,options);
-    this.element.querySelector('[name="json"]')?.addEventListener("change", e => this._loadJson(e));
-    this.element.querySelector('[name="pdf"]')?.addEventListener("change", e => this._loadPdf(e));
+  static DEFAULT_OPTIONS={id:"dnd5e-pc-custom-content",classes:["dnd5e-pc-character-builder"],tag:"form",window:{title:"Add Custom Character Content",resizable:true},position:{width:760,height:700},actions:{save:CustomContentImporter.save}};
+  static PARTS={form:{template:"modules/dnd5e-pc-homebrew-builder/templates/importer.hbs"}};
+  constructor(options={}){super(options);this.data={rules:"2024",type:"feat",name:"",description:"",identifier:"",classIdentifier:""};this.parentBuilder=options.parentBuilder||null;}
+  async _prepareContext(){
+    const classes=[];
+    for(const item of game.items||[])if(item.type==="class")classes.push({name:item.name,identifier:item.system?.identifier||foundry.utils.slugify(item.name,{strict:true})});
+    for(const pack of game.packs||[])if(pack.documentName==="Item"){try{const idx=await pack.getIndex({fields:["type","system.identifier"]});for(const i of idx)if(i.type==="class")classes.push({name:i.name,identifier:i.system?.identifier||foundry.utils.slugify(i.name,{strict:true})});}catch(e){}}
+    return{data:this.data,classes:classes.filter((x,i,a)=>a.findIndex(y=>y.identifier===x.identifier)===i).sort((a,b)=>a.name.localeCompare(b.name)),isSubclass:this.data.type==="subclass"};
   }
-  _collect() {
-    for (const key of ["type","name","description","identifier","classIdentifier"]) {
-      const el=this.element.querySelector('[name="'+key+'"]'); if(el) this.data[key]=el.value;
-    }
+  _onRender(context,options){super._onRender(context,options);this.element.querySelector('[name="json"]')?.addEventListener("change",e=>this._loadJson(e));this.element.querySelector('[name="pdf"]')?.addEventListener("change",e=>this._loadPdf(e));this.element.querySelector('[name="type"]')?.addEventListener("change",e=>{this._collect();this.data.type=e.target.value;this.render({force:true});});}
+  _collect(){for(const key of["rules","type","name","description","identifier","classIdentifier"]){const el=this.element.querySelector('[name="'+key+'"]');if(el)this.data[key]=el.value;}}
+  async _loadJson(event){
+    const file=event.target.files?.[0];if(!file)return;
+    try{const raw=JSON.parse(await file.text());const value=Array.isArray(raw)?raw[0]:(raw.items?.[0]||raw);this.data.type=value.type||this.data.type;this.data.name=value.name||"";this.data.description=value.system?.description?.value||value.description||"";this.data.identifier=value.system?.identifier||value.identifier||"";this.data.classIdentifier=value.system?.classIdentifier||value.classIdentifier||"";this.data.rules=value.flags?.[MODULE_ID]?.rules||this.data.rules;return this.render({force:true});}catch(err){return ui.notifications.error("Could not read JSON.");}
   }
-  async _loadJson(event) {
-    const file=event.target.files?.[0]; if(!file)return;
-    try {
-      const raw=JSON.parse(await file.text());
-      const value=Array.isArray(raw)?raw[0]:(raw.items?.[0] || raw);
-      this.data.type=value.type || this.data.type;
-      this.data.name=value.name || "";
-      this.data.description=value.system?.description?.value || value.description || "";
-      this.data.identifier=value.system?.identifier || value.identifier || "";
-      this.data.classIdentifier=value.system?.classIdentifier || value.classIdentifier || "";
-      return this.render({force:true});
-    } catch(err) { return ui.notifications.error("Could not read JSON."); }
+  async _loadPdf(event){
+    const file=event.target.files?.[0];if(!file)return;this._collect();
+    try{
+      let pdfjs=globalThis.pdfjsLib||globalThis.pdfjs;
+      if(!pdfjs?.getDocument){pdfjs=await import("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs");pdfjs.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs";}
+      const pdf=await pdfjs.getDocument({data:new Uint8Array(await file.arrayBuffer())}).promise,pages=[];
+      for(let n=1;n<=pdf.numPages;n++){const page=await pdf.getPage(n),content=await page.getTextContent();pages.push(content.items.map(x=>x.str).join(" "));}
+      this.data.description=pages.join("\n\n");if(!this.data.name)this.data.name=file.name.replace(/\.pdf$/i,"");return this.render({force:true});
+    }catch(err){console.error(MODULE_ID,"PDF extraction failed",err);return ui.notifications.error("PDF text extraction failed. Check the browser console for the exact PDF.js error.");}
   }
-  async _loadPdf(event) {
-    const file=event.target.files?.[0]; if(!file)return;
-    this._collect();
-    try {
-      const pdfjs=globalThis.pdfjsLib || globalThis.pdfjs;
-      if(!pdfjs?.getDocument) throw new Error("PDF parser unavailable");
-      const pdf=await pdfjs.getDocument({data:new Uint8Array(await file.arrayBuffer())}).promise;
-      const pages=[];
-      for(let n=1;n<=pdf.numPages;n++){const page=await pdf.getPage(n);const content=await page.getTextContent();pages.push(content.items.map(x=>x.str).join(" "));}
-      this.data.description=pages.join("\n\n");
-      return this.render({force:true});
-    } catch(err) {
-      console.error(MODULE_ID,"PDF extraction failed",err);
-      return ui.notifications.error("PDF text extraction failed. Check the browser console for the exact PDF.js error.");
-    }
-  }
-  static async save() {
-    this._collect();
-    if(!this.data.name.trim())return ui.notifications.warn("Enter a content name.");
-    const system={description:{value:this.data.description,chat:""}};
-    if(["class","subclass"].includes(this.data.type)) system.identifier=this.data.identifier || foundry.utils.slugify(this.data.name,{strict:true});
-    if(this.data.type==="subclass") system.classIdentifier=this.data.classIdentifier;
-    try {
-      const item=await Item.create({name:this.data.name.trim(),type:this.data.type,system,flags:{[MODULE_ID]:{homebrew:true}}});
-      ui.notifications.info("Created custom content: "+item.name);
-      return item.sheet?.render({force:true});
-    } catch(err) { console.error(MODULE_ID,err); return ui.notifications.error("D&D5e rejected this custom item."); }
+  static async save(){
+    this._collect();if(!this.data.name.trim())return ui.notifications.warn("Enter a content name.");
+    const system={description:{value:this.data.description,chat:""},source:{rules:this.data.rules}};
+    if(["class","subclass"].includes(this.data.type))system.identifier=this.data.identifier||foundry.utils.slugify(this.data.name,{strict:true});
+    if(this.data.type==="subclass"){if(!this.data.classIdentifier)return ui.notifications.warn("Choose the class this subclass belongs to.");system.classIdentifier=this.data.classIdentifier;}
+    try{
+      const item=await Item.create({name:this.data.name.trim(),type:this.data.type,system,flags:{[MODULE_ID]:{homebrew:true,rules:this.data.rules}}});
+      ui.notifications.info("Added "+item.name+" to the character builder.");
+      if(this.parentBuilder)await this.parentBuilder.render({force:true});
+      await this.close();return item.sheet?.render({force:true});
+    }catch(err){console.error(MODULE_ID,err);return ui.notifications.error("D&D5e rejected this custom content.");}
   }
 }
-
 function addBuildButton(app, html) {
   if(game.system.id !== "dnd5e") return;
   const root = html instanceof HTMLElement ? html : html?.[0];
