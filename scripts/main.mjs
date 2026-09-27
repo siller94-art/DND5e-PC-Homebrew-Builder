@@ -60,14 +60,14 @@ class CharacterBuilder extends HandlebarsApplicationMixin(ApplicationV2) {
     for (const [key, types] of Object.entries(TYPE_MAP)) {
       const rows = [];
       for (const item of game.items || []) {
-        if (types.includes(item.type)) rows.push({ uuid:item.uuid, name:item.name, type:item.type, source:"World", identifier:item.system?.identifier || "", classIdentifier:item.system?.classIdentifier || "", rules:(typeof item.system?.source==="object" ? item.system?.source?.rules : "") || item.flags?.["dnd5e-pc-homebrew-builder"]?.rules || "" });
+        if (types.includes(item.type)) rows.push({ uuid:item.uuid, name:item.name, type:item.type, source:"World", identifier:item.system?.identifier || "", classIdentifier:item.system?.classIdentifier || "", rules:item.flags?.["dnd5e-pc-homebrew-builder"]?.rules || "" });
       }
       for (const pack of game.packs || []) {
         if (pack.documentName !== "Item") continue;
         try {
           const index = await pack.getIndex({ fields:["type","system.identifier","system.classIdentifier","flags.dnd5e-pc-homebrew-builder.rules"] });
           for (const item of index) if (types.includes(item.type)) {
-            rows.push({ uuid:"Compendium."+pack.collection+"."+item._id, name:item.name, type:item.type, source:pack.metadata.label || pack.collection, identifier:item.system?.identifier || "", classIdentifier:item.system?.classIdentifier || "", rules:(typeof item.system?.source==="object" ? item.system?.source?.rules : "") || item.flags?.["dnd5e-pc-homebrew-builder"]?.rules || "" });
+            rows.push({ uuid:"Compendium."+pack.collection+"."+item._id, name:item.name, type:item.type, source:pack.metadata.label || pack.collection, identifier:item.system?.identifier || "", classIdentifier:item.system?.classIdentifier || "", rules:item.flags?.["dnd5e-pc-homebrew-builder"]?.rules || "" });
           }
         } catch (err) { console.debug(MODULE_ID, "Skipped pack", pack.collection); }
       }
@@ -217,7 +217,7 @@ class CustomContentImporter extends HandlebarsApplicationMixin(ApplicationV2) {
           const feature=await Item.create({name,type:"feat",system:{description:{value:"",chat:""}},flags:{[MODULE_ID]:{homebrew:true,rules:this.data.rules,featureOf:parentId,featureKind:this.data.type}}});
           createdFeatures.push(feature);
         }
-        if(createdFeatures.length)system.advancement=[{_id:foundry.utils.randomID(),type:"ItemGrant",configuration:{items:createdFeatures.map(x=>({uuid:x.uuid,optional:false}))},value:{added:{}},level:1,title:this.data.type==="class"?"Class Features":"Subclass Features",icon:""}];
+        if(createdFeatures.length)system.advancement=[{_id:foundry.utils.randomID(),type:"ItemGrant",configuration:{items:createdFeatures.map((x,i)=>({uuid:x.uuid,optional:false,sort:i*10000})),optional:false,sorting:"m",spell:null},value:{ability:null,added:{}},level:1,title:this.data.type==="class"?"Class Features":"Subclass Features",icon:""}];
       }
       const item=await Item.create({name:this.data.name.trim(),type:this.data.type,system,flags:{[MODULE_ID]:{homebrew:true,rules:this.data.rules}}});
       ui.notifications.info("Added "+item.name+(createdFeatures.length?" with "+createdFeatures.length+" linked features":"")+" to the character builder.");
