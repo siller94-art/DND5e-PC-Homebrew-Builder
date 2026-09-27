@@ -60,18 +60,26 @@ class CharacterBuilder extends HandlebarsApplicationMixin(ApplicationV2) {
     for (const [key, types] of Object.entries(TYPE_MAP)) {
       const rows = [];
       for (const item of game.items || []) {
-        if (types.includes(item.type)) rows.push({ uuid:item.uuid, name:item.name, type:item.type, source:"World" });
+        if (types.includes(item.type)) rows.push({ uuid:item.uuid, name:item.name, type:item.type, source:"World", identifier:item.system?.identifier || "", classIdentifier:item.system?.classIdentifier || "", rules:item.system?.source?.rules || "" });
       }
       for (const pack of game.packs || []) {
         if (pack.documentName !== "Item") continue;
         try {
-          const index = await pack.getIndex({ fields:["type"] });
+          const index = await pack.getIndex({ fields:["type","system.identifier","system.classIdentifier","system.source.rules","system.source.book"] });
           for (const item of index) if (types.includes(item.type)) {
-            rows.push({ uuid:"Compendium."+pack.collection+"."+item._id, name:item.name, type:item.type, source:pack.metadata.label || pack.collection });
+            rows.push({ uuid:"Compendium."+pack.collection+"."+item._id, name:item.name, type:item.type, source:pack.metadata.label || pack.collection, identifier:item.system?.identifier || "", classIdentifier:item.system?.classIdentifier || "", rules:item.system?.source?.rules || "" });
           }
         } catch (err) { console.debug(MODULE_ID, "Skipped pack", pack.collection); }
       }
-      this.catalog[key] = rows.sort((a,b) => a.name.localeCompare(b.name));
+      let filtered=rows;
+      if(key==="subclass" && this.draft.class){
+        const chosen=await fromUuid(this.draft.class);
+        const cid=chosen?.system?.identifier || chosen?.identifier || "";
+        filtered=rows.filter(r=>r.classIdentifier===cid);
+      }
+      const wanted=this.draft.rules;
+      const ruleMatched=filtered.filter(r=>!r.rules || String(r.rules).includes(wanted));
+      this.catalog[key]=(ruleMatched.length?ruleMatched:filtered).filter((r,i,a)=>a.findIndex(x=>x.uuid===r.uuid)===i).sort((a,b)=>a.name.localeCompare(b.name));
     }
   }
 
@@ -117,6 +125,12 @@ class CharacterBuilder extends HandlebarsApplicationMixin(ApplicationV2) {
   static async next() {
     this._collect();
     if (STEPS[this.stepIndex] === "identity" && !this.draft.name) return ui.notifications.warn("Enter a character name.");
+    const current=STEPS[this.stepIndex];
+    if(current==="class" && this.draft.class){
+      const cls=await fromUuid(this.draft.class);
+      const subclassLevel=(cls?.system?.advancement || []).find(a=>a.type==="Subclass")?.level;
+      if(!subclassLevel || subclassLevel>1) this.draft.subclass="";
+    }
     this.stepIndex = Math.min(STEPS.length - 1, this.stepIndex + 1);
     return this.render({ force:true });
   }
