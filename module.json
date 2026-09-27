@@ -2,7 +2,7 @@
   "id": "dnd5e-pc-homebrew-builder",
   "title": "D&D 5e / 5.5e Custom Character Builder",
   "description": "Guided player-character builder for D&D 5e 2014 and 2024 rules with world, compendium, PDF, and JSON homebrew support.",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "authors": [{"name":"siller94-art"}],
   "compatibility": {"minimum":"14.367","verified":"14"},
   "relationships":{"systems":[{"id":"dnd5e","type":"system","compatibility":{"minimum":"6.0.0","verified":"6.0.5"}}]},
