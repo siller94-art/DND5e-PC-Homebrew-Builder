@@ -1,7 +1,18 @@
-<div class="custom-importer"><h1>Custom PC Content</h1><p>Create homebrew or import it from PDF/JSON. Saved content becomes available in the character builder.</p>
-<div class="import-grid"><label>JSON<input type="file" name="json" accept=".json,application/json"></label><label>PDF<input type="file" name="pdf" accept=".pdf,application/pdf"></label></div>
-<label>Content Type<select name="type">{{#each types}}<option value="{{this}}">{{this}}</option>{{/each}}</select></label>
-<label>Name<input name="name" value="{{data.name}}"></label>
-<div class="import-grid"><label>Identifier<input name="identifier" value="{{data.identifier}}"></label><label>Parent Class Identifier<input name="classIdentifier" value="{{data.classIdentifier}}"></label></div>
-<label>Content<textarea name="description" rows="16">{{data.description}}</textarea></label>
-<footer><button type="button" class="primary" data-action="save"><i class="fas fa-save"></i> Save Custom Content</button></footer></div>
+<div class="custom-importer">
+<h1>Add Custom Character Content</h1>
+<p>Add homebrew directly to this character builder. Choose the rules version and content type, or load a PDF/JSON first.</p>
+<div class="rule-cards">
+<label><input type="radio" name="rules" value="2014"><strong>D&D 5e — 2014 / Legacy</strong></label>
+<label><input type="radio" name="rules" value="2024" checked><strong>D&D 2024 / 5.5e</strong></label>
+</div>
+<div class="import-grid"><label>Import JSON<input type="file" name="json" accept=".json,application/json"></label><label>Import PDF<input type="file" name="pdf" accept=".pdf,application/pdf"></label></div>
+<label>What are you adding?
+<select name="type">
+<option value="race">Species / Race</option><option value="background">Background</option><option value="class">Class</option><option value="subclass">Subclass</option><option value="feat">Feat / Feature</option><option value="spell">Spell</option><option value="equipment">Equipment</option><option value="weapon">Weapon</option><option value="tool">Tool</option><option value="consumable">Consumable</option>
+</select></label>
+<label>Name<input name="name" value="{{data.name}}" placeholder="Homebrew name"></label>
+{{#if isSubclass}}<label>Which class does this subclass belong to?
+<select name="classIdentifier"><option value="">Choose a class</option>{{#each classes}}<option value="{{identifier}}">{{name}}</option>{{/each}}</select></label>{{/if}}
+<label>Content<textarea name="description" rows="16" placeholder="Imported PDF/JSON text or homebrew description">{{data.description}}</textarea></label>
+<footer><button type="button" class="primary" data-action="save"><i class="fas fa-plus"></i> Add to Character Builder</button></footer>
+</div>
