@@ -15,6 +15,7 @@
   "esmodules": ["scripts/main.mjs"],
   "styles": ["styles/builder.css"],
   "languages": [{"lang":"en","name":"English","path":"lang/en.json"}],
+  "url": "https://github.com/siller94-art/DND5e-PC-Homebrew-Builder",
   "manifest": "https://raw.githubusercontent.com/siller94-art/DND5e-PC-Homebrew-Builder/main/module.json",
-  "url": "https://github.com/siller94-art/DND5e-PC-Homebrew-Builder"
+  "download": "https://github.com/siller94-art/DND5e-PC-Homebrew-Builder/archive/refs/heads/main.zip"
 }
