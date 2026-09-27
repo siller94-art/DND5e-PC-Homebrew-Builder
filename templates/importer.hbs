@@ -1,0 +1,7 @@
+<div class="custom-importer"><h1>Custom PC Content</h1><p>Create homebrew or import it from PDF/JSON. Saved content becomes available in the character builder.</p>
+<div class="import-grid"><label>JSON<input type="file" name="json" accept=".json,application/json"></label><label>PDF<input type="file" name="pdf" accept=".pdf,application/pdf"></label></div>
+<label>Content Type<select name="type">{{#each types}}<option value="{{this}}">{{this}}</option>{{/each}}</select></label>
+<label>Name<input name="name" value="{{data.name}}"></label>
+<div class="import-grid"><label>Identifier<input name="identifier" value="{{data.identifier}}"></label><label>Parent Class Identifier<input name="classIdentifier" value="{{data.classIdentifier}}"></label></div>
+<label>Content<textarea name="description" rows="16">{{data.description}}</textarea></label>
+<footer><button type="button" class="primary" data-action="save"><i class="fas fa-save"></i> Save Custom Content</button></footer></div>
