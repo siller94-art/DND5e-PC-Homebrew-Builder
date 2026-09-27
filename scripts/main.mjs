@@ -181,7 +181,7 @@ class CharacterBuilder extends HandlebarsApplicationMixin(ApplicationV2) {
 class CustomContentImporter extends HandlebarsApplicationMixin(ApplicationV2) {
   static DEFAULT_OPTIONS={id:"dnd5e-pc-custom-content",classes:["dnd5e-pc-character-builder"],tag:"form",window:{title:"Add Custom Character Content",resizable:true},position:{width:760,height:700},actions:{save:CustomContentImporter.save}};
   static PARTS={form:{template:"modules/dnd5e-pc-homebrew-builder/templates/importer.hbs"}};
-  constructor(options={}){super(options);this.data={rules:"2024",type:"feat",name:"",description:"",identifier:"",classIdentifier:""};this.parentBuilder=options.parentBuilder||null;}
+  constructor(options={}){super(options);this.data={rules:"2024",type:"feat",name:"",description:"",identifier:"",classIdentifier:"",featureNames:""};this.parentBuilder=options.parentBuilder||null;}
   async _prepareContext(){
     const classes=[];
     for(const item of game.items||[])if(item.type==="class")classes.push({name:item.name,identifier:item.system?.identifier||foundry.utils.slugify(item.name,{strict:true})});
@@ -189,10 +189,10 @@ class CustomContentImporter extends HandlebarsApplicationMixin(ApplicationV2) {
     return{data:this.data,classes:classes.filter((x,i,a)=>a.findIndex(y=>y.identifier===x.identifier)===i).sort((a,b)=>a.name.localeCompare(b.name)),isSubclass:this.data.type==="subclass"};
   }
   _onRender(context,options){super._onRender(context,options);this.element.querySelector('[name="json"]')?.addEventListener("change",e=>this._loadJson(e));this.element.querySelector('[name="pdf"]')?.addEventListener("change",e=>this._loadPdf(e));this.element.querySelector('[name="type"]')?.addEventListener("change",e=>{this._collect();this.data.type=e.target.value;this.render({force:true});});}
-  _collect(){for(const key of["rules","type","name","description","identifier","classIdentifier"]){const el=this.element.querySelector('[name="'+key+'"]');if(el)this.data[key]=el.value;}}
+  _collect(){for(const key of["rules","type","name","description","identifier","classIdentifier","featureNames"]){const el=this.element.querySelector('[name="'+key+'"]');if(el)this.data[key]=el.value;}}
   async _loadJson(event){
     const file=event.target.files?.[0];if(!file)return;
-    try{const raw=JSON.parse(await file.text());const value=Array.isArray(raw)?raw[0]:(raw.items?.[0]||raw);this.data.type=value.type||this.data.type;this.data.name=value.name||"";this.data.description=value.system?.description?.value||value.description||"";this.data.identifier=value.system?.identifier||value.identifier||"";this.data.classIdentifier=value.system?.classIdentifier||value.classIdentifier||"";this.data.rules=value.flags?.[MODULE_ID]?.rules||this.data.rules;return this.render({force:true});}catch(err){return ui.notifications.error("Could not read JSON.");}
+    try{const raw=JSON.parse(await file.text());const value=Array.isArray(raw)?raw[0]:(raw.items?.[0]||raw);this.data.type=value.type||this.data.type;this.data.name=value.name||"";this.data.description=value.system?.description?.value||value.description||"";this.data.identifier=value.system?.identifier||value.identifier||"";this.data.classIdentifier=value.system?.classIdentifier||value.classIdentifier||"";this.data.featureNames=(value.features||value.classFeatures||value.subclassFeatures||[]).map(x=>typeof x==="string"?x:x.name).filter(Boolean).join("\n");this.data.rules=value.flags?.[MODULE_ID]?.rules||this.data.rules;return this.render({force:true});}catch(err){return ui.notifications.error("Could not read JSON.");}
   }
   async _loadPdf(event){
     const file=event.target.files?.[0];if(!file)return;this._collect();
@@ -210,8 +210,17 @@ class CustomContentImporter extends HandlebarsApplicationMixin(ApplicationV2) {
     if(["class","subclass"].includes(this.data.type))system.identifier=this.data.identifier||foundry.utils.slugify(this.data.name,{strict:true});
     if(this.data.type==="subclass"){if(!this.data.classIdentifier)return ui.notifications.warn("Choose the class this subclass belongs to.");system.classIdentifier=this.data.classIdentifier;}
     try{
+      const createdFeatures=[];
+      if(["class","subclass"].includes(this.data.type)){
+        const parentId=this.data.type==="class"?system.identifier:this.data.classIdentifier;
+        for(const name of this.data.featureNames.split(/\r?\n|,/).map(x=>x.trim()).filter(Boolean)){
+          const feature=await Item.create({name,type:"feat",system:{description:{value:"",chat:""}},flags:{[MODULE_ID]:{homebrew:true,rules:this.data.rules,featureOf:parentId,featureKind:this.data.type}}});
+          createdFeatures.push(feature);
+        }
+        if(createdFeatures.length)system.advancement=[{_id:foundry.utils.randomID(),type:"ItemGrant",configuration:{items:createdFeatures.map(x=>({uuid:x.uuid,optional:false}))},value:{added:{}},level:1,title:this.data.type==="class"?"Class Features":"Subclass Features",icon:""}];
+      }
       const item=await Item.create({name:this.data.name.trim(),type:this.data.type,system,flags:{[MODULE_ID]:{homebrew:true,rules:this.data.rules}}});
-      ui.notifications.info("Added "+item.name+" to the character builder.");
+      ui.notifications.info("Added "+item.name+(createdFeatures.length?" with "+createdFeatures.length+" linked features":"")+" to the character builder.");
       if(this.parentBuilder)await this.parentBuilder.render({force:true});
       await this.close();return item.sheet?.render({force:true});
     }catch(err){console.error(MODULE_ID,err);return ui.notifications.error("D&D5e rejected this custom content.");}
