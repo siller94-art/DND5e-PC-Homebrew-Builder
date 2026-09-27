@@ -60,14 +60,14 @@ class CharacterBuilder extends HandlebarsApplicationMixin(ApplicationV2) {
     for (const [key, types] of Object.entries(TYPE_MAP)) {
       const rows = [];
       for (const item of game.items || []) {
-        if (types.includes(item.type)) rows.push({ uuid:item.uuid, name:item.name, type:item.type, source:"World", identifier:item.system?.identifier || "", classIdentifier:item.system?.classIdentifier || "", rules:item.system?.source?.rules || "" });
+        if (types.includes(item.type)) rows.push({ uuid:item.uuid, name:item.name, type:item.type, source:"World", identifier:item.system?.identifier || "", classIdentifier:item.system?.classIdentifier || "", rules:(typeof item.system?.source==="object" ? item.system?.source?.rules : "") || item.flags?.["dnd5e-pc-homebrew-builder"]?.rules || "" });
       }
       for (const pack of game.packs || []) {
         if (pack.documentName !== "Item") continue;
         try {
-          const index = await pack.getIndex({ fields:["type","system.identifier","system.classIdentifier","system.source.rules","system.source.book"] });
+          const index = await pack.getIndex({ fields:["type","system.identifier","system.classIdentifier","flags.dnd5e-pc-homebrew-builder.rules"] });
           for (const item of index) if (types.includes(item.type)) {
-            rows.push({ uuid:"Compendium."+pack.collection+"."+item._id, name:item.name, type:item.type, source:pack.metadata.label || pack.collection, identifier:item.system?.identifier || "", classIdentifier:item.system?.classIdentifier || "", rules:item.system?.source?.rules || "" });
+            rows.push({ uuid:"Compendium."+pack.collection+"."+item._id, name:item.name, type:item.type, source:pack.metadata.label || pack.collection, identifier:item.system?.identifier || "", classIdentifier:item.system?.classIdentifier || "", rules:(typeof item.system?.source==="object" ? item.system?.source?.rules : "") || item.flags?.["dnd5e-pc-homebrew-builder"]?.rules || "" });
           }
         } catch (err) { console.debug(MODULE_ID, "Skipped pack", pack.collection); }
       }
@@ -206,7 +206,7 @@ class CustomContentImporter extends HandlebarsApplicationMixin(ApplicationV2) {
   }
   static async save(){
     this._collect();if(!this.data.name.trim())return ui.notifications.warn("Enter a content name.");
-    const system={description:{value:this.data.description,chat:""},source:{rules:this.data.rules}};
+    const system={description:{value:this.data.description,chat:""}};
     if(["class","subclass"].includes(this.data.type))system.identifier=this.data.identifier||foundry.utils.slugify(this.data.name,{strict:true});
     if(this.data.type==="subclass"){if(!this.data.classIdentifier)return ui.notifications.warn("Choose the class this subclass belongs to.");system.classIdentifier=this.data.classIdentifier;}
     try{
