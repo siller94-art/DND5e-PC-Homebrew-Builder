@@ -14,6 +14,19 @@ Foundry VTT module for creating custom player-character content for the official
 - D&D5e 6.0.0+ (verified against 6.0.3)
 
 ## Install
-Place the module folder in Foundry's Data/modules directory, then enable **D&D 5e PC Homebrew Builder** in your D&D5e world.
+
+### Foundry VTT Manifest URL
+Copy this link and paste it into **Foundry VTT → Add-on Modules → Install Module → Manifest URL**:
+
+```
+https://raw.githubusercontent.com/siller94-art/DND5e-PC-Homebrew-Builder/main/module.json
+```
+
+[Open module.json](https://raw.githubusercontent.com/siller94-art/DND5e-PC-Homebrew-Builder/main/module.json)
+
+### Manual Install
+You can also download the project from GitHub and place the module folder in Foundry's `Data/modules` directory.
+
+Then enable **D&D 5e PC Homebrew Builder** in your D&D5e world.
 
 Version: 0.2.1
