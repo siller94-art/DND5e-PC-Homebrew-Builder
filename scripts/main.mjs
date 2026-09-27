@@ -207,7 +207,10 @@ class CustomContentImporter extends HandlebarsApplicationMixin(ApplicationV2) {
       for(let n=1;n<=pdf.numPages;n++){const page=await pdf.getPage(n);const content=await page.getTextContent();pages.push(content.items.map(x=>x.str).join(" "));}
       this.data.description=pages.join("\n\n");
       return this.render({force:true});
-    } catch(err) { return ui.notifications.warn("PDF selected, but text extraction is unavailable. Paste the PDF text into Content."); }
+    } catch(err) {
+      console.error(MODULE_ID,"PDF extraction failed",err);
+      return ui.notifications.error("PDF text extraction failed. Check the browser console for the exact PDF.js error.");
+    }
   }
   static async save() {
     this._collect();
