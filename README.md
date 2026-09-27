@@ -2,9 +2,9 @@
 
 Guided player-character creation for Foundry VTT V14 and the official D&D5e system.
 
-## v0.3.1
+## v0.3.2
 - Adds **Build Character** to the Actors directory.
-- Guided flow: Rules → Identity → Species/Race → Background → Class → Subclass → Abilities → Feats → Spells → Equipment → Details → Review.
+- Guided flow is class-aware: selecting a class limits subclasses to that class, and native D&D5e Advancement data supplies its class features and choices instead of duplicating SRD features.
 - Supports **2014 / Legacy D&D 5e** and **2024 / 5.5e** selection.
 - Reads compatible world Items and installed Item compendiums.
 - Adds a **Custom Content** editor.
@@ -26,4 +26,4 @@ Enable the module in your D&D5e world. Open the **Actors** sidebar and click **B
 ## Custom Content
 Inside the character builder click **Custom Content**. Homebrew saved there becomes a world Item and is picked up by the builder on the appropriate step.
 
-Version: 0.3.1
+Version: 0.3.2
