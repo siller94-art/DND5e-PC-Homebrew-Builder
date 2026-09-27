@@ -1,0 +1,70 @@
+<header class="builder-header">
+  <h1>D&D 5e PC Homebrew Builder</h1>
+  <p>Create custom player-character content for the official D&D 5e system.</p>
+</header>
+
+<div class="builder-grid">
+  <label>
+    Content Type
+    <select name="type">
+      {{#each itemTypes}}
+        <option value="{{this}}" {{#if (eq ../draft.type this)}}selected{{/if}}>{{this}}</option>
+      {{/each}}
+    </select>
+  </label>
+
+  <label>
+    Name
+    <input name="name" type="text" value="{{draft.name}}" placeholder="Homebrew content name">
+  </label>
+
+  <label>
+    Identifier
+    <input name="identifier" type="text" value="{{draft.identifier}}" placeholder="Used by classes/subclasses">
+  </label>
+</div>
+
+<section class="import-panel">
+  <h2>Import Homebrew</h2>
+
+  <div class="import-grid">
+    <label class="file-card">
+      <span><i class="fas fa-file-pdf"></i> PDF</span>
+      <input name="pdf" type="file" accept="application/pdf,.pdf">
+      <small>Load text from a homebrew D&D 5e PDF when PDF parsing is available.</small>
+    </label>
+
+    <label class="file-card">
+      <span><i class="fas fa-file-code"></i> JSON</span>
+      <input name="json" type="file" accept="application/json,.json">
+      <small>Load Foundry-style or simple homebrew JSON.</small>
+    </label>
+  </div>
+
+  {{#if draft.sourceName}}
+    <div class="source-status">
+      <strong>{{draft.sourceKind}} loaded:</strong> {{draft.sourceName}}
+    </div>
+  {{/if}}
+</section>
+
+<label class="description">
+  <span>Content</span>
+  <textarea name="description" placeholder="Write or review the homebrew content here.">{{draft.description}}</textarea>
+</label>
+
+{{#if draft.sourceText}}
+<section class="source-preview">
+  <h2>Imported Source Preview</h2>
+  <pre>{{draft.sourceText}}</pre>
+</section>
+{{/if}}
+
+<footer class="builder-footer">
+  <button type="button" data-action="clear">
+    <i class="fas fa-eraser"></i> Clear
+  </button>
+  <button type="button" data-action="save">
+    <i class="fas fa-save"></i> Create D&D 5e Item
+  </button>
+</footer>
