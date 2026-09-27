@@ -186,7 +186,7 @@ class CustomContentImporter extends HandlebarsApplicationMixin(ApplicationV2) {
     const classes=[];
     for(const item of game.items||[])if(item.type==="class")classes.push({name:item.name,identifier:item.system?.identifier||foundry.utils.slugify(item.name,{strict:true})});
     for(const pack of game.packs||[])if(pack.documentName==="Item"){try{const idx=await pack.getIndex({fields:["type","system.identifier"]});for(const i of idx)if(i.type==="class")classes.push({name:i.name,identifier:i.system?.identifier||foundry.utils.slugify(i.name,{strict:true})});}catch(e){}}
-    return{data:this.data,classes:classes.filter((x,i,a)=>a.findIndex(y=>y.identifier===x.identifier)===i).sort((a,b)=>a.name.localeCompare(b.name)),isSubclass:this.data.type==="subclass"};
+    return{data:this.data,isClassLike:["class","subclass"].includes(this.data.type),classes:classes.filter((x,i,a)=>a.findIndex(y=>y.identifier===x.identifier)===i).sort((a,b)=>a.name.localeCompare(b.name)),isSubclass:this.data.type==="subclass"};
   }
   _onRender(context,options){super._onRender(context,options);this.element.querySelector('[name="json"]')?.addEventListener("change",e=>this._loadJson(e));this.element.querySelector('[name="pdf"]')?.addEventListener("change",e=>this._loadPdf(e));this.element.querySelector('[name="type"]')?.addEventListener("change",e=>{this._collect();this.data.type=e.target.value;this.render({force:true});});}
   _collect(){for(const key of["rules","type","name","description","identifier","classIdentifier","featureNames"]){const el=this.element.querySelector('[name="'+key+'"]');if(el)this.data[key]=el.value;}}
