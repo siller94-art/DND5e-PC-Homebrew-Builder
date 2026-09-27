@@ -1,0 +1,108 @@
+.dnd5e-pc-homebrew-builder {
+  --builder-border: rgba(0, 0, 0, 0.35);
+  --builder-panel: rgba(0, 0, 0, 0.08);
+}
+
+.dnd5e-pc-homebrew-builder .window-content {
+  padding: 14px;
+  overflow: auto;
+}
+
+.dnd5e-pc-homebrew-builder .builder-header {
+  border-bottom: 1px solid var(--builder-border);
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+}
+
+.dnd5e-pc-homebrew-builder .builder-header h1,
+.dnd5e-pc-homebrew-builder h2 {
+  margin: 0 0 6px;
+}
+
+.dnd5e-pc-homebrew-builder .builder-header p {
+  margin: 0;
+}
+
+.dnd5e-pc-homebrew-builder .builder-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr 1.5fr;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.dnd5e-pc-homebrew-builder label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-weight: 600;
+}
+
+.dnd5e-pc-homebrew-builder input,
+.dnd5e-pc-homebrew-builder select,
+.dnd5e-pc-homebrew-builder textarea {
+  width: 100%;
+}
+
+.dnd5e-pc-homebrew-builder .import-panel,
+.dnd5e-pc-homebrew-builder .source-preview {
+  border: 1px solid var(--builder-border);
+  background: var(--builder-panel);
+  border-radius: 5px;
+  padding: 12px;
+  margin-bottom: 14px;
+}
+
+.dnd5e-pc-homebrew-builder .import-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.dnd5e-pc-homebrew-builder .file-card {
+  border: 1px solid var(--builder-border);
+  border-radius: 4px;
+  padding: 10px;
+}
+
+.dnd5e-pc-homebrew-builder .file-card span {
+  font-size: 1.05em;
+}
+
+.dnd5e-pc-homebrew-builder .file-card small {
+  font-weight: 400;
+  opacity: 0.8;
+}
+
+.dnd5e-pc-homebrew-builder .source-status {
+  margin-top: 10px;
+  padding: 8px;
+  border-top: 1px solid var(--builder-border);
+}
+
+.dnd5e-pc-homebrew-builder .description textarea {
+  min-height: 240px;
+  resize: vertical;
+}
+
+.dnd5e-pc-homebrew-builder .source-preview pre {
+  max-height: 240px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  padding: 8px;
+  border: 1px solid var(--builder-border);
+}
+
+.dnd5e-pc-homebrew-builder .builder-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+@media (max-width: 760px) {
+  .dnd5e-pc-homebrew-builder .builder-grid,
+  .dnd5e-pc-homebrew-builder .import-grid {
+    grid-template-columns: 1fr;
+  }
+}
