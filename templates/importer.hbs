@@ -13,6 +13,6 @@
 <label>Name<input name="name" value="{{data.name}}" placeholder="Homebrew name"></label>
 {{#if isSubclass}}<label>Which class does this subclass belong to?
 <select name="classIdentifier"><option value="">Choose a class</option>{{#each classes}}<option value="{{identifier}}">{{name}}</option>{{/each}}</select></label>{{/if}}
-<label>Content<textarea name="description" rows="16" placeholder="Imported PDF/JSON text or homebrew description">{{data.description}}</textarea></label>
+{{#if isClassLike}}<label>Class / Subclass Features<textarea name="featureNames" rows="6" placeholder="One feature per line">{{data.featureNames}}</textarea></label>{{/if}}\n<label>Content<textarea name="description" rows="12" placeholder="Imported PDF/JSON text or homebrew description">{{data.description}}</textarea></label>
 <footer><button type="button" class="primary" data-action="save"><i class="fas fa-plus"></i> Add to Character Builder</button></footer>
 </div>
