@@ -22,7 +22,7 @@
 
 {{#if isSingle}}
 <section class="content-list">
-{{#each rows}}<label><input type="radio" name="{{../step}}" value="{{uuid}}"><span><strong>{{name}}</strong><small>{{source}} · {{type}}</small></span></label>
+{{#each rows}}<label><input type="radio" name="{{../step}}" value="{{uuid}}" {{#if (eq ../step "species")}}{{#if (eq ../draft.species uuid)}}checked{{/if}}{{/if}}{{#if (eq ../step "background")}}{{#if (eq ../draft.background uuid)}}checked{{/if}}{{/if}}{{#if (eq ../step "class")}}{{#if (eq ../draft.class uuid)}}checked{{/if}}{{/if}}{{#if (eq ../step "subclass")}}{{#if (eq ../draft.subclass uuid)}}checked{{/if}}{{/if}}><span><strong>{{name}}</strong><small>{{source}} · {{type}}</small></span></label>
 {{else}}<p class="empty">No matching content was found. Add homebrew with <b>Custom Content</b> or enable a compatible D&D5e compendium.</p>{{/each}}
 </section>
 {{/if}}
@@ -40,7 +40,7 @@
 
 {{#if isMulti}}
 <section class="content-list">
-{{#each rows}}<label><input type="checkbox" name="{{../step}}" value="{{uuid}}"><span><strong>{{name}}</strong><small>{{source}} · {{type}}</small></span></label>
+{{#each rows}}<label><input type="checkbox" name="{{../step}}" value="{{uuid}}" {{#if (eq ../step "feats")}}{{#if (includes ../draft.feats uuid)}}checked{{/if}}{{/if}}{{#if (eq ../step "spells")}}{{#if (includes ../draft.spells uuid)}}checked{{/if}}{{/if}}{{#if (eq ../step "equipment")}}{{#if (includes ../draft.equipment uuid)}}checked{{/if}}{{/if}}><span><strong>{{name}}</strong><small>{{source}} · {{type}}</small></span></label>
 {{else}}<p class="empty">No matching content was found for this step.</p>{{/each}}
 </section>
 {{/if}}

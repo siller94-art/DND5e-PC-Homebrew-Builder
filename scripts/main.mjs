@@ -1,6 +1,8 @@
 const MODULE_ID = "dnd5e-pc-homebrew-builder";
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
+Handlebars.registerHelper("includes", (list, value) => Array.isArray(list) && list.includes(value));
+
 const STEPS = ["rules","identity","species","background","class","subclass","abilities","feats","spells","equipment","details","review"];
 const TYPE_MAP = {
   species: ["race","species"],
@@ -40,8 +42,38 @@ class CharacterBuilder extends HandlebarsApplicationMixin(ApplicationV2) {
     };
   }
 
+  _sanitizeDraftSelections() {
+    const validSingle = ["species","background","class","subclass"];
+    const validMulti = ["feats","spells","equipment"];
+    const allRows = Object.values(this.catalog).flat();
+    const validUuids = new Set(allRows.map(row => row.uuid));
+
+    for (const key of validSingle) {
+      if (this.draft[key] && !validUuids.has(this.draft[key])) this.draft[key] = "";
+    }
+
+    for (const key of validMulti) {
+      if (!Array.isArray(this.draft[key])) this.draft[key] = [];
+      this.draft[key] = this.draft[key].filter(uuid => validUuids.has(uuid));
+    }
+
+    if (this.draft.subclass && this.draft.class) {
+      const classRows = this.catalog.class || [];
+      const subclassRows = this.catalog.subclass || [];
+      const classSelected = classRows.some(row => row.uuid === this.draft.class);
+      const subclassSelected = subclassRows.some(row => row.uuid === this.draft.subclass);
+      if (!classSelected || !subclassSelected) this.draft.subclass = "";
+    }
+
+    if (this.draft.class && !(this.catalog.class || []).some(row => row.uuid === this.draft.class)) {
+      this.draft.class = "";
+      this.draft.subclass = "";
+    }
+  }
+
   async _prepareContext() {
     await this._scanContent();
+    this._sanitizeDraftSelections();
     const step = STEPS[this.stepIndex];
     return {
       step, stepNumber: this.stepIndex + 1, totalSteps: STEPS.length,
@@ -86,7 +118,12 @@ class CharacterBuilder extends HandlebarsApplicationMixin(ApplicationV2) {
   _collect() {
     const root = this.element;
     if (!root) return;
-    const get = n => root.querySelector('[name="'+n+'"]')?.value;
+    const get = n => {
+      const checked = root.querySelector('[name="'+n+'"]:checked');
+      if (checked) return checked.value;
+      const field = root.querySelector('[name="'+n+'"]');
+      return field?.value ?? undefined;
+    };
     if (get("rules")) this.draft.rules = get("rules");
     if (get("name") !== undefined) this.draft.name = get("name").trim();
     if (get("details") !== undefined) this.draft.details = get("details");
