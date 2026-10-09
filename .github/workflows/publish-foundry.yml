@@ -28,6 +28,7 @@ jobs:
           for entry in manifest.get('languages',[]):
               assert (root/entry['path']).is_file(),entry['path']
           assert (root/'templates/builder.hbs').is_file()
+          assert (root/'templates/importer.hbs').is_file()
           assert manifest['download'].endswith('/dnd5e-pc-homebrew-builder.zip')
           print('Validated',manifest['version'])
           PY
