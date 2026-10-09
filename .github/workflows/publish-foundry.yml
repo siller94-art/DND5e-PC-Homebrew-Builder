@@ -1,0 +1,49 @@
+name: Publish Standalone PC Builder
+on:
+  workflow_dispatch:
+  push:
+    tags: ['foundry-v*']
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate and package standalone module
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,pathlib
+          root=pathlib.Path('.')
+          manifest=json.loads((root/'module.json').read_text())
+          assert manifest['id']=='dnd5e-pc-homebrew-builder'
+          for path in manifest.get('esmodules',[])+manifest.get('styles',[]):
+              assert (root/path).is_file(),path
+          for entry in manifest.get('languages',[]):
+              assert (root/entry['path']).is_file(),entry['path']
+          assert (root/'templates/builder.hbs').is_file()
+          assert manifest['download'].endswith('/dnd5e-pc-homebrew-builder.zip')
+          print('Validated',manifest['version'])
+          PY
+          mkdir -p /tmp/dnd5e-pc-homebrew-builder
+          cp module.json /tmp/dnd5e-pc-homebrew-builder/
+          cp -R scripts styles templates lang /tmp/dnd5e-pc-homebrew-builder/
+          cd /tmp
+          zip -r "$GITHUB_WORKSPACE/dnd5e-pc-homebrew-builder.zip" dnd5e-pc-homebrew-builder
+          cd "$GITHUB_WORKSPACE"
+          unzip -t dnd5e-pc-homebrew-builder.zip
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG="foundry-v$(python3 -c 'import json;print(json.load(open("module.json"))["version"])')"
+          if ! gh release view "$TAG" >/dev/null 2>&1; then
+            gh release create "$TAG" --target "$GITHUB_SHA" --title "DND5e PC Homebrew Builder $TAG" --notes "Standalone Foundry VTT PC character builder."
+          fi
+          gh release upload "$TAG" module.json dnd5e-pc-homebrew-builder.zip --clobber
+          curl --fail --location --retry 5 --retry-delay 3 "https://github.com/$GITHUB_REPOSITORY/releases/download/$TAG/module.json" -o /tmp/manifest.json
+          python3 -m json.tool /tmp/manifest.json >/dev/null
