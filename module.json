@@ -2,14 +2,42 @@
   "id": "dnd5e-pc-homebrew-builder",
   "title": "D&D 5e / 5.5e Custom Character Builder",
   "description": "Guided player-character builder for D&D 5e 2014 and 2024 rules with world, compendium, PDF, and JSON homebrew support.",
-  "version": "0.3.6",
-  "authors": [{"name":"siller94-art"}],
-  "compatibility": {"minimum":"14.367","verified":"14"},
-  "relationships":{"systems":[{"id":"dnd5e","type":"system","compatibility":{"minimum":"6.0.0","verified":"6.0.5"}}]},
-  "esmodules":["scripts/main.mjs"],
-  "styles":["styles/builder.css"],
-  "languages":[{"lang":"en","name":"English","path":"lang/en.json"}],
-  "url":"https://github.com/siller94-art/DND5e-PC-Homebrew-Builder",
-  "manifest":"https://raw.githubusercontent.com/siller94-art/DND5e-PC-Homebrew-Builder/main/module.json",
-  "download":"https://github.com/siller94-art/DND5e-PC-Homebrew-Builder/archive/refs/heads/main.zip"
+  "version": "0.3.7",
+  "authors": [
+    {
+      "name": "siller94-art"
+    }
+  ],
+  "compatibility": {
+    "minimum": "14.367",
+    "verified": "14"
+  },
+  "relationships": {
+    "systems": [
+      {
+        "id": "dnd5e",
+        "type": "system",
+        "compatibility": {
+          "minimum": "6.0.0",
+          "verified": "6.0.5"
+        }
+      }
+    ]
+  },
+  "esmodules": [
+    "scripts/main.mjs"
+  ],
+  "styles": [
+    "styles/builder.css"
+  ],
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
+    }
+  ],
+  "url": "https://github.com/siller94-art/DND5e-PC-Homebrew-Builder",
+  "manifest": "https://github.com/siller94-art/DND5e-PC-Homebrew-Builder/releases/download/foundry-v0.3.7/module.json",
+  "download": "https://github.com/siller94-art/DND5e-PC-Homebrew-Builder/releases/download/foundry-v0.3.7/dnd5e-pc-homebrew-builder.zip"
 }
