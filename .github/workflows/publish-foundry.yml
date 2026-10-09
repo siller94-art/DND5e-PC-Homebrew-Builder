@@ -2,6 +2,7 @@ name: Publish Standalone PC Builder
 on:
   workflow_dispatch:
   push:
+    branches: [main]
     tags: ['foundry-v*']
 permissions:
   contents: write
@@ -19,6 +20,9 @@ jobs:
           root=pathlib.Path('.')
           manifest=json.loads((root/'module.json').read_text())
           assert manifest['id']=='dnd5e-pc-homebrew-builder'
+          assert manifest['manifest'].endswith('/module.json')
+          assert manifest['download'].endswith('.zip')
+          assert manifest['manifest'].split('/releases/download/')[1].split('/')[0] == 'foundry-v'+manifest['version']
           for path in manifest.get('esmodules',[])+manifest.get('styles',[]):
               assert (root/path).is_file(),path
           for entry in manifest.get('languages',[]):
@@ -27,6 +31,7 @@ jobs:
           assert manifest['download'].endswith('/dnd5e-pc-homebrew-builder.zip')
           print('Validated',manifest['version'])
           PY
+          node --check scripts/main.mjs
           mkdir -p /tmp/dnd5e-pc-homebrew-builder
           cp module.json /tmp/dnd5e-pc-homebrew-builder/
           cp -R scripts styles templates lang /tmp/dnd5e-pc-homebrew-builder/
@@ -47,3 +52,5 @@ jobs:
           gh release upload "$TAG" module.json dnd5e-pc-homebrew-builder.zip --clobber
           curl --fail --location --retry 5 --retry-delay 3 "https://github.com/$GITHUB_REPOSITORY/releases/download/$TAG/module.json" -o /tmp/manifest.json
           python3 -m json.tool /tmp/manifest.json >/dev/null
+          curl --fail --location --retry 5 --retry-delay 3 "https://github.com/$GITHUB_REPOSITORY/releases/download/$TAG/dnd5e-pc-homebrew-builder.zip" -o /tmp/released.zip
+          unzip -t /tmp/released.zip
