@@ -130,3 +130,5 @@
 .portrait-controls .range-row{display:grid!important;grid-template-columns:90px 1fr 60px;align-items:center;gap:8px;width:100%;flex-direction:row}
 .portrait-controls .range-row input[type=range]{width:100%}
 .portrait-controls .range-row span{text-align:right;color:#ccc;font-variant-numeric:tabular-nums}
+.load-status{margin-top:14px;display:flex;flex-direction:column;gap:4px;font-size:.78em;color:#999}
+.load-status button{font-size:1em;padding:2px 8px;width:auto;align-self:flex-start;border:1px solid var(--pc-line);background:var(--pc-panel);color:#bbb;border-radius:4px}

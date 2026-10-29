@@ -2,6 +2,9 @@
 
 Guided player-character creation for Foundry VTT V14 and the official D&D5e system.
 
+## v0.6.5
+- Sidebar shows the loaded module version, how many entries and compendiums were read, and a **Reload content** button.
+
 ## v0.6.4
 - **Updates now work:** the manifest URL always points at the latest release. Earlier releases pointed at their own version, so "Check for Updates" never found anything newer — reinstall once from the link below.
 - Compendiums that fail to load are named on screen instead of being skipped silently.
@@ -86,4 +89,4 @@ For a class or subclass without a `features` list, every `### Heading` becomes a
 ## SRD content
 The builder lists whatever is in your D&D5e compendiums, which already include the SRD 5.1 (2014) and SRD 5.2 (2024) races/species, backgrounds and classes. The SRDs only contain a few backgrounds (2024: Acolyte, Criminal, Sage, Soldier; 2014: Acolyte), so use **Add Custom Background** for anything else.
 
-Version: 0.6.4
+Version: 0.6.5

@@ -193,6 +193,7 @@ class CharacterBuilder extends HandlebarsApplicationMixin(ApplicationV2) {
       filterSource: CharacterBuilder.filterSource,
       edition: CharacterBuilder.setEdition,
       goto: CharacterBuilder.gotoStep,
+      reloadContent: CharacterBuilder.reloadContent,
       removePick: CharacterBuilder.removePick,
       srdToggle: CharacterBuilder.toggleSrd,
       multiCustom: CharacterBuilder.openMultiCustom,
@@ -299,6 +300,9 @@ class CharacterBuilder extends HandlebarsApplicationMixin(ApplicationV2) {
         ...sources.map(src => ({ label:src, value:src, count:allRows.filter(r => r.source === src).length, active:src === activeSource }))] : [],
       isList: ["species","background","class","subclass","feats","spells","equipment"].includes(step),
       failedPacks: (this._failedPacks || []).join(", "),
+      moduleVersion: game.modules?.get(MODULE_ID)?.version || "?",
+      loadStats: this._loadStats || { packs:0, rows:0 },
+      worldCount: (game.items?.size ?? 0),
       editions: EDITIONS.map(e => ({ ...e, active: e.value === edition })),
       srdOnly, search: this.search[step] || "",
       classOptions: extra.classOptions || null, classNote: extra.note || "",
@@ -351,6 +355,7 @@ class CharacterBuilder extends HandlebarsApplicationMixin(ApplicationV2) {
     if (this._packCache) return this._packCache;
     const allTypes = Object.values(TYPE_MAP).flat();
     const rows = [], failed = [];
+    let packCount = 0;
     for (const pack of game.packs || []) {
       if (pack.documentName !== "Item") continue;
       try {
@@ -364,10 +369,13 @@ class CharacterBuilder extends HandlebarsApplicationMixin(ApplicationV2) {
           try { index = await pack.getIndex(); }
           catch (err2) { failed.push(pack.metadata.label || pack.collection); console.error(MODULE_ID, "Could not index", pack.collection, err2); continue; }
         }
+        packCount++;
         for (const item of index) if (allTypes.includes(item.type)) rows.push(CharacterBuilder.makeRow(item, "Compendium."+pack.collection+"."+item._id, pack));
       } catch (err) { failed.push(pack.metadata.label || pack.collection); console.error(MODULE_ID, "Skipped pack", pack.collection, err); }
     }
     this._failedPacks = failed;
+    this._loadStats = { packs: packCount, rows: rows.length };
+    console.log(MODULE_ID, "Loaded " + rows.length + " entries from " + packCount + " Item compendiums" + (failed.length ? "; failed: " + failed.join(", ") : ""));
     // Only remember a good result; if something failed, try again on the next step.
     if (!failed.length) this._packCache = rows;
     return rows;
@@ -810,6 +818,12 @@ class CharacterBuilder extends HandlebarsApplicationMixin(ApplicationV2) {
       picked, overCantrips: picked.cantrips > cantrips, overSpells: picked.spells > spells,
       none: caster.mode === "none"
     };
+  }
+
+  static reloadContent() {
+    this._collect();
+    this._packCache = null;
+    return this.render({ force:true });
   }
 
   static gotoStep(event, target) {

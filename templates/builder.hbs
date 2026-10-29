@@ -6,6 +6,11 @@
     {{#each stepList}}<li class="{{#if active}}active{{/if}} {{#if done}}done{{/if}}" data-action="goto" data-step="{{key}}">{{label}}</li>{{/each}}
   </ol>
   <button type="button" data-action="custom"><i class="fas fa-flask"></i> Custom Content</button>
+  <div class="load-status">
+    <span>v{{moduleVersion}}</span>
+    <span>{{loadStats.rows}} entries · {{loadStats.packs}} compendiums · {{worldCount}} world items</span>
+    <button type="button" data-action="reloadContent"><i class="fas fa-rotate"></i> Reload content</button>
+  </div>
 </aside>
 <main class="pc-builder-main">
 <header><small>STEP {{stepNumber}} / {{totalSteps}}</small><h1>{{stepTitle}}</h1></header>
