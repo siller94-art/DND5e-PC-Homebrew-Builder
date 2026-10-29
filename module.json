@@ -2,7 +2,7 @@
   "id": "dnd5e-pc-homebrew-builder",
   "title": "D&D 5e / 5.5e Custom Character Builder",
   "description": "Guided player-character builder for D&D 5e 2014 and 2024 rules with world, compendium, PDF, and JSON homebrew support.",
-  "version": "0.3.7",
+  "version": "0.4.0",
   "authors": [
     {
       "name": "siller94-art"
@@ -38,6 +38,6 @@
     }
   ],
   "url": "https://github.com/siller94-art/DND5e-PC-Homebrew-Builder",
-  "manifest": "https://github.com/siller94-art/DND5e-PC-Homebrew-Builder/releases/download/foundry-v0.3.7/module.json",
-  "download": "https://github.com/siller94-art/DND5e-PC-Homebrew-Builder/releases/download/foundry-v0.3.7/dnd5e-pc-homebrew-builder.zip"
+  "manifest": "https://github.com/siller94-art/DND5e-PC-Homebrew-Builder/releases/download/foundry-v0.4.0/module.json",
+  "download": "https://github.com/siller94-art/DND5e-PC-Homebrew-Builder/releases/download/foundry-v0.4.0/dnd5e-pc-homebrew-builder.zip"
 }

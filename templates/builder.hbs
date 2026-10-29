@@ -3,13 +3,12 @@
   <h2>Build Character</h2>
   <div class="progress">Step {{stepNumber}} of {{totalSteps}}</div>
   <ol>
-    <li>Rules</li><li>Identity</li><li>Species / Race</li><li>Background</li><li>Class</li><li>Subclass</li>
-    <li>Abilities</li><li>Feats</li><li>Spells</li><li>Equipment</li><li>Details</li><li>Review</li>
+    {{#each stepList}}<li class="{{#if active}}active{{/if}} {{#if done}}done{{/if}}">{{label}}</li>{{/each}}
   </ol>
   <button type="button" data-action="custom"><i class="fas fa-flask"></i> Custom Content</button>
 </aside>
 <main class="pc-builder-main">
-<header><small>STEP {{stepNumber}} / {{totalSteps}}</small><h1>{{step}}</h1></header>
+<header><small>STEP {{stepNumber}} / {{totalSteps}}</small><h1>{{stepTitle}}</h1></header>
 
 {{#if isRules}}
 <section class="rule-cards">
@@ -18,7 +17,40 @@
 </section>
 {{/if}}
 
-{{#if isIdentity}}<section class="form-area"><label>Character Name<input name="name" value="{{draft.name}}" placeholder="Character name"></label></section>{{/if}}
+{{#if isIdentity}}
+<section class="form-area identity-area">
+<label>Character Name<input name="name" value="{{draft.name}}" placeholder="Character name"></label>
+<div class="portrait-row">
+  <div class="portrait-preview"><img src="{{portrait}}" alt="Character portrait"></div>
+  <div class="portrait-controls">
+    <strong>Portrait</strong>
+    <label class="upload-button"><i class="fas fa-upload"></i> Upload Image<input type="file" name="portraitFile" accept="image/*" hidden></label>
+    <button type="button" data-action="browsePortrait"><i class="fas fa-folder-open"></i> Browse Files</button>
+    {{#if draft.img}}<button type="button" data-action="clearPortrait"><i class="fas fa-times"></i> Remove</button>{{/if}}
+    <input name="img" value="{{draft.img}}" placeholder="or paste an image path / URL">
+    <small>Used for the character portrait and token.</small>
+  </div>
+</div>
+</section>
+{{/if}}
+
+{{#if isList}}
+<nav class="source-filters">
+<label class="edition-filter">Edition<select name="editionFilter">{{#each editions}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}</select></label>
+{{#each sourceButtons}}<button type="button" class="{{#if active}}active{{/if}}" data-action="filterSource" data-source="{{value}}">{{label}} <span>{{count}}</span></button>{{/each}}
+{{#if customStep}}<button type="button" class="add-custom {{#if showCustom}}active{{/if}}" data-action="customEntry"><i class="fas fa-plus"></i> Add Custom {{customStep.label}}</button>{{/if}}
+</nav>
+{{/if}}
+
+{{#if showCustom}}
+<section class="custom-entry">
+<label class="custom-pick"><input type="radio" name="{{step}}" value="__custom__" {{#if customSelected}}checked{{/if}}><span><strong>Use custom {{customStep.label}}</strong><small>Homebrew · {{customStep.type}}</small></span></label>
+<label>{{customStep.label}} Name<input name="customName" value="{{custom.name}}" placeholder="e.g. Coralborn"></label>
+{{#if customStep.hitDie}}<label>Hit Die<select name="customHitDie">{{#each hitDice}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{value}}</option>{{/each}}</select></label>{{/if}}
+<label>Description <small>(Markdown supported)</small><textarea name="customDescription" rows="6" placeholder="{{customStep.placeholder}}">{{custom.description}}</textarea></label>
+{{#if isGM}}<label class="inline-check"><input type="checkbox" name="customSave" {{#if custom.save}}checked{{/if}}> Also save to the world so it can be reused</label>{{/if}}
+</section>
+{{/if}}
 
 {{#if isSingle}}
 <section class="content-list">

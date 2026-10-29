@@ -1,18 +1,29 @@
 <div class="custom-importer">
 <h1>Add Custom Character Content</h1>
-<p>Add homebrew directly to this character builder. Choose the rules version and content type, or load a PDF/JSON first.</p>
+<p>Add homebrew directly to this character builder. Choose the rules version and content type, or load a JSON, PDF or Markdown file first.</p>
 <div class="rule-cards">
-<label><input type="radio" name="rules" value="2014"><strong>D&D 5e — 2014 / Legacy</strong></label>
-<label><input type="radio" name="rules" value="2024" checked><strong>D&D 2024 / 5.5e</strong></label>
+<label><input type="radio" name="rules" value="2014" {{#if (eq data.rules "2014")}}checked{{/if}}><strong>D&D 5e — 2014 / Legacy</strong></label>
+<label><input type="radio" name="rules" value="2024" {{#if (eq data.rules "2024")}}checked{{/if}}><strong>D&D 2024 / 5.5e</strong></label>
 </div>
-<div class="import-grid"><label>Import JSON<input type="file" name="json" accept=".json,application/json"></label><label>Import PDF<input type="file" name="pdf" accept=".pdf,application/pdf"></label></div>
+<div class="import-grid">
+<label>Import JSON<input type="file" name="json" accept=".json,application/json"></label>
+<label>Import PDF<input type="file" name="pdf" accept=".pdf,application/pdf"></label>
+<label>Import Markdown<input type="file" name="markdown" accept=".md,.markdown,.txt,text/markdown,text/plain"></label>
+</div>
 <label>What are you adding?
 <select name="type">
-<option value="race">Species / Race</option><option value="background">Background</option><option value="class">Class</option><option value="subclass">Subclass</option><option value="feat">Feat / Feature</option><option value="spell">Spell</option><option value="equipment">Equipment</option><option value="weapon">Weapon</option><option value="tool">Tool</option><option value="consumable">Consumable</option>
+{{#each types}}<option value="{{value}}" {{#if (eq ../data.type value)}}selected{{/if}}>{{label}}</option>{{/each}}
 </select></label>
 <label>Name<input name="name" value="{{data.name}}" placeholder="Homebrew name"></label>
 {{#if isSubclass}}<label>Which class does this subclass belong to?
-<select name="classIdentifier"><option value="">Choose a class</option>{{#each classes}}<option value="{{identifier}}">{{name}}</option>{{/each}}</select></label>{{/if}}
-{{#if isClassLike}}<label>Class / Subclass Features<textarea name="featureNames" rows="6" placeholder="One feature per line">{{data.featureNames}}</textarea></label>{{/if}}\n<label>Content<textarea name="description" rows="12" placeholder="Imported PDF/JSON text or homebrew description">{{data.description}}</textarea></label>
+<select name="classIdentifier"><option value="">Choose a class</option>{{#each classes}}<option value="{{identifier}}" {{#if (eq ../data.classIdentifier identifier)}}selected{{/if}}>{{name}}</option>{{/each}}</select></label>{{/if}}
+{{#if isClassLike}}<label>Class / Subclass Features<textarea name="featureNames" rows="6" placeholder="One feature per line">{{data.featureNames}}</textarea></label>{{/if}}
+<label>Content format
+<select name="format">
+<option value="markdown" {{#if (eq data.format "markdown")}}selected{{/if}}>Markdown</option>
+<option value="text" {{#if (eq data.format "text")}}selected{{/if}}>Plain text</option>
+<option value="html" {{#if (eq data.format "html")}}selected{{/if}}>HTML</option>
+</select></label>
+<label>Content<textarea name="description" rows="12" placeholder="Imported JSON/PDF/Markdown text or homebrew description. Markdown: **bold**, *italic*, # headings, - lists, | tables |">{{data.description}}</textarea></label>
 <footer><button type="button" class="primary" data-action="save"><i class="fas fa-plus"></i> Add to Character Builder</button></footer>
 </div>
