@@ -335,7 +335,8 @@ class CharacterBuilder extends HandlebarsApplicationMixin(ApplicationV2) {
   static detectEdition(item, pack) {
     const flagged = item.flags?.[MODULE_ID]?.rules;
     if (flagged) return String(flagged);
-    const rules = item.system?.source?.rules;
+    const source = item.system?.source;
+    const rules = (source && typeof source === "object") ? source.rules : "";
     if (rules) return String(rules);
     const id = (pack?.collection || "").toLowerCase();
     const label = (pack?.metadata?.label || "").toLowerCase();
@@ -352,8 +353,15 @@ class CharacterBuilder extends HandlebarsApplicationMixin(ApplicationV2) {
     for (const pack of game.packs || []) {
       if (pack.documentName !== "Item") continue;
       try {
-        const index = await pack.getIndex({ fields:["img","type","system.identifier","system.classIdentifier","system.source.rules","system.type.value","system.type.subtype","system.level","system.rarity",
-          "flags."+MODULE_ID+".rules","flags."+MODULE_ID+".homebrew","flags."+MODULE_ID+".featureOf"] });
+        // Ask for whole objects (system.source, system.type), never nested keys: some packs store
+        // a number or string there, and Foundry throws when indexing "system.source.rules" on those.
+        let index;
+        try {
+          index = await pack.getIndex({ fields:["img","type","system.identifier","system.classIdentifier","system.source","system.type","system.level","system.rarity","flags."+MODULE_ID] });
+        } catch (err) {
+          console.warn(MODULE_ID, "Falling back to a basic index for", pack.collection, err);
+          index = await pack.getIndex({ fields:["img","type"] });
+        }
         for (const item of index) if (allTypes.includes(item.type)) rows.push(CharacterBuilder.makeRow(item, "Compendium."+pack.collection+"."+item._id, pack));
       } catch (err) { console.debug(MODULE_ID, "Skipped pack", pack.collection); }
     }
@@ -363,7 +371,7 @@ class CharacterBuilder extends HandlebarsApplicationMixin(ApplicationV2) {
   /** One catalog row from a world Item or a compendium index entry. */
   static makeRow(item, uuid, pack) {
     const flags = item.flags?.[MODULE_ID] || {};
-    const type = item.system?.type || {};
+    const type = (item.system?.type && typeof item.system.type === "object") ? item.system.type : {};
     return {
       uuid, name:item.name, type:item.type, img:item.img || "icons/svg/item-bag.svg",
       source: pack ? (pack.metadata.label || pack.collection) : (flags.homebrew ? "Homebrew" : "World"),

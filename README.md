@@ -2,6 +2,9 @@
 
 Guided player-character creation for Foundry VTT V14 and the official D&D5e system.
 
+## v0.6.1
+- Fixes "Cannot use 'in' operator to search for 'rules'" errors from compendiums whose items store `system.source` as a number.
+
 ## v0.6.0
 - **Feats, Spells and Equipment** only list player options: monster features, class features and natural/siege weapons are hidden.
 - Every list step has **2014 / 2024 / All** tabs, an **SRD** toggle, a **search bar** and the item's **Foundry icon**.
@@ -73,4 +76,4 @@ For a class or subclass without a `features` list, every `### Heading` becomes a
 ## SRD content
 The builder lists whatever is in your D&D5e compendiums, which already include the SRD 5.1 (2014) and SRD 5.2 (2024) races/species, backgrounds and classes. The SRDs only contain a few backgrounds (2024: Acolyte, Criminal, Sage, Soldier; 2014: Acolyte), so use **Add Custom Background** for anything else.
 
-Version: 0.6.0
+Version: 0.6.1
