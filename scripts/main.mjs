@@ -298,6 +298,7 @@ class CharacterBuilder extends HandlebarsApplicationMixin(ApplicationV2) {
       sourceButtons: sources.length > 1 ? [{ label:"All", value:"", count:allRows.length, active:!activeSource },
         ...sources.map(src => ({ label:src, value:src, count:allRows.filter(r => r.source === src).length, active:src === activeSource }))] : [],
       isList: ["species","background","class","subclass","feats","spells","equipment"].includes(step),
+      failedPacks: (this._failedPacks || []).join(", "),
       editions: EDITIONS.map(e => ({ ...e, active: e.value === edition })),
       srdOnly, search: this.search[step] || "",
       classOptions: extra.classOptions || null, classNote: extra.note || "",
@@ -349,7 +350,7 @@ class CharacterBuilder extends HandlebarsApplicationMixin(ApplicationV2) {
   async _packRows() {
     if (this._packCache) return this._packCache;
     const allTypes = Object.values(TYPE_MAP).flat();
-    const rows = [];
+    const rows = [], failed = [];
     for (const pack of game.packs || []) {
       if (pack.documentName !== "Item") continue;
       try {
@@ -357,15 +358,36 @@ class CharacterBuilder extends HandlebarsApplicationMixin(ApplicationV2) {
         // a number or string there, and Foundry throws when indexing "system.source.rules" on those.
         let index;
         try {
-          index = await pack.getIndex({ fields:["img","type","system.identifier","system.classIdentifier","system.source","system.type","system.level","system.rarity","flags."+MODULE_ID] });
+          index = await pack.getIndex({ fields:CharacterBuilder.indexFields() });
         } catch (err) {
-          console.warn(MODULE_ID, "Falling back to a basic index for", pack.collection, err);
-          index = await pack.getIndex({ fields:["img","type"] });
+          console.warn(MODULE_ID, "Falling back to the default index for", pack.collection, err);
+          try { index = await pack.getIndex(); }
+          catch (err2) { failed.push(pack.metadata.label || pack.collection); console.error(MODULE_ID, "Could not index", pack.collection, err2); continue; }
         }
         for (const item of index) if (allTypes.includes(item.type)) rows.push(CharacterBuilder.makeRow(item, "Compendium."+pack.collection+"."+item._id, pack));
       } catch (err) { console.debug(MODULE_ID, "Skipped pack", pack.collection); }
     }
-    return this._packCache = rows;
+    this._failedPacks = failed;
+    // Only remember a good result; if something failed, try again on the next step.
+    if (!failed.length) this._packCache = rows;
+    return rows;
+  }
+
+  /**
+   * Extra index fields, minus any that overlap a field already indexed (D&D5e indexes
+   * "system.source"; asking for "system.source.rules" as well makes Foundry throw).
+   */
+  static indexFields() {
+    const wanted = ["img","type","system.identifier","system.classIdentifier","system.source","system.type.value","system.type.subtype","system.level","system.rarity","flags."+MODULE_ID];
+    const existing = [...(globalThis.CONFIG?.Item?.compendiumIndexFields || [])];
+    const overlaps = (a, b) => a !== b && (a.startsWith(b + ".") || b.startsWith(a + "."));
+    const chosen = [];
+    for (const field of wanted) {
+      if (existing.includes(field)) continue;
+      if ([...existing, ...chosen].some(other => overlaps(field, other))) continue;
+      chosen.push(field);
+    }
+    return chosen;
   }
 
   /** One catalog row from a world Item or a compendium index entry. */

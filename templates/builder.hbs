@@ -53,6 +53,7 @@
 {{#if sourceButtons.length}}<nav class="source-filters">{{#each sourceButtons}}<button type="button" class="{{#if active}}active{{/if}}" data-action="filterSource" data-source="{{value}}">{{label}} <span>{{count}}</span></button>{{/each}}</nav>{{/if}}
 {{#if recommendedCount}}<p class="rec-legend" style="--rec:{{recColor}}"><span class="rec-dot"></span> Highlighted: good picks for <strong>{{recFor}}</strong> ({{recommendedCount}})</p>{{/if}}
 {{#if classNote}}<p class="list-note">{{classNote}}</p>{{/if}}
+{{#if failedPacks}}<p class="list-note">Some compendiums couldn't be read and are missing here: {{failedPacks}}. Press F12 and check the console for details.</p>{{/if}}
 {{#if isSpells}}{{#with spellInfo}}
 <div class="spell-allowance" data-cantrips="{{cantrips}}" data-spells="{{spells}}">
   {{#if none}}<p>{{#if message}}{{message}}{{else}}{{className}} ({{edition}}): {{note}}{{/if}}</p>
