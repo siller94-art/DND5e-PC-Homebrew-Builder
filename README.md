@@ -2,6 +2,11 @@
 
 Guided player-character creation for Foundry VTT V14 and the official D&D5e system.
 
+## v0.7.1
+- Fixes character creation stopping after the class: the builder no longer waits on a close signal Foundry may not send, so species, background, feats, spells and equipment are always added.
+- If an Advancement window is cancelled, that item is still added to the sheet (its choices just aren't applied).
+- Each feat, spell and item is added on its own, so one bad item can't stop the rest; anything advancement already granted isn't duplicated.
+
 ## v0.7.0
 - **Hit points, saves and proficiencies:** class, subclass, species and background now go through D&D5e's own Advancement Manager when the character is created (the same prompts as dropping a class on a sheet). Level 1 HP is set, 2024 background ability increases apply, and the character starts at full HP. Custom classes get a Hit Points advancement too.
 - Chosen armor, shields and weapons are equipped, so AC is calculated from them.
@@ -94,4 +99,4 @@ For a class or subclass without a `features` list, every `### Heading` becomes a
 ## SRD content
 The builder lists whatever is in your D&D5e compendiums, which already include the SRD 5.1 (2014) and SRD 5.2 (2024) races/species, backgrounds and classes. The SRDs only contain a few backgrounds (2024: Acolyte, Criminal, Sage, Soldier; 2014: Acolyte), so use **Add Custom Background** for anything else.
 
-Version: 0.7.0
+Version: 0.7.1

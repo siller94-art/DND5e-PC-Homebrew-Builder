@@ -1028,18 +1028,31 @@ class CharacterBuilder extends HandlebarsApplicationMixin(ApplicationV2) {
   static async addWithAdvancement(actor, data) {
     const AM = globalThis.dnd5e?.applications?.advancement?.AdvancementManager;
     if (!AM) { await actor.createEmbeddedDocuments("Item", [data]); return true; }
-    const manager = AM.forNewItem(actor, data);
+    let manager;
+    try { manager = AM.forNewItem(actor, data); }
+    catch (err) { console.error(MODULE_ID, "Advancement setup failed for", data.name, err); return false; }
     if (!manager.steps.length) { await actor.createEmbeddedDocuments("Item", [data]); return true; }
     return new Promise(resolve => {
-      let finished = false;
-      const onComplete = Hooks.on("dnd5e.advancementManagerComplete", m => { if (m === manager) finished = true; });
-      const onClose = Hooks.on("closeAdvancementManager", app => {
-        if (app !== manager) return;
+      let settled = false, seenOpen = false;
+      const finish = ok => {
+        if (settled) return;
+        settled = true;
         Hooks.off("dnd5e.advancementManagerComplete", onComplete);
-        Hooks.off("closeAdvancementManager", onClose);
-        resolve(finished);
+        clearInterval(poll);
+        // Give D&D5e a moment to finish closing its window before the next one opens.
+        setTimeout(() => resolve(ok), 150);
+      };
+      // D&D5e calls this after it has written everything to the actor.
+      const onComplete = Hooks.on("dnd5e.advancementManagerComplete", m => { if (m === manager) finish(true); });
+      // If the player closes the window early, notice that too (without relying on close hooks).
+      const poll = setInterval(() => {
+        if (manager.rendered) seenOpen = true;
+        else if (seenOpen) finish(false);
+      }, 300);
+      // Once render has finished the window counts as open, even if it closes before the next poll.
+      Promise.resolve(manager.render(true)).then(() => { seenOpen = true; if (!manager.rendered) finish(false); }, err => {
+        console.error(MODULE_ID, "Advancement window failed for", data.name, err); finish(false);
       });
-      manager.render(true);
     });
   }
 
@@ -1079,6 +1092,7 @@ class CharacterBuilder extends HandlebarsApplicationMixin(ApplicationV2) {
       // through D&D5e's Advancement Manager, which sets hit points, saves, proficiencies, skill picks,
       // granted features and (2024) background ability score increases.
       const skipped = [];
+      const TYPES = { class:"class", subclass:"subclass", species:"race", background:"background" };
       for (const step of ["class","subclass","species","background"]) {
         const value = this.draft[step];
         if (!value) continue;
@@ -1088,18 +1102,34 @@ class CharacterBuilder extends HandlebarsApplicationMixin(ApplicationV2) {
         if (!data) continue;
         const done = await CharacterBuilder.addWithAdvancement(actor, data);
         if (!done) skipped.push(data.name);
+        // Safety net: if advancement was cancelled or failed, still put the item on the sheet.
+        const present = actor.items.some(i => i.type === TYPES[step] && i.name === data.name);
+        if (!present) {
+          try { await actor.createEmbeddedDocuments("Item", [data]); }
+          catch (err) { console.error(MODULE_ID, "Could not add " + data.name, err); }
+        }
       }
       // Feats, spells and equipment; armor, shields and weapons are equipped so AC is calculated.
+      // Skip anything advancement already granted (e.g. an origin feat), and add items one batch per
+      // type so one bad item can't stop the rest.
+      const have = new Set(actor.items.map(i => i.type + ":" + i.name));
       const extras = [];
       for (const uuid of [...this.draft.feats, ...this.draft.spells, ...this.draft.equipment]) {
-        try { const data = await CharacterBuilder.itemDataFrom(uuid); if (data) extras.push(CharacterBuilder.equipIfGear(data)); }
-        catch (err) { console.error(MODULE_ID, "Could not add", uuid, err); }
+        try {
+          const data = await CharacterBuilder.itemDataFrom(uuid);
+          if (data && !have.has(data.type + ":" + data.name)) { extras.push(CharacterBuilder.equipIfGear(data)); have.add(data.type + ":" + data.name); }
+        } catch (err) { console.error(MODULE_ID, "Could not load", uuid, err); }
       }
-      if (extras.length) await actor.createEmbeddedDocuments("Item", extras);
+      const failedExtras = [];
+      for (const data of extras) {
+        try { await actor.createEmbeddedDocuments("Item", [data]); }
+        catch (err) { failedExtras.push(data.name); console.error(MODULE_ID, "Could not add", data.name, err); }
+      }
+      if (failedExtras.length) ui.notifications.warn("Could not add: " + failedExtras.join(", ") + ". See the console (F12).");
       // Start at full hit points.
       const hp = actor.system.attributes?.hp;
       if (hp && hp.max > 0 && hp.value < hp.max) await actor.update({ "system.attributes.hp.value": hp.max });
-      if (skipped.length) ui.notifications.warn("Advancement was cancelled for: " + skipped.join(", ") + ". Their choices (like hit points or skills) were not applied.");
+      if (skipped.length) ui.notifications.warn("Advancement was cancelled for: " + skipped.join(", ") + ". They were added, but their choices (like hit points or skills) were not applied.");
       ui.notifications.info("Created "+actor.name+".");
       actor.sheet?.render({ force:true });
       return this.close();
