@@ -40,7 +40,134 @@ const CLASS_ABILITIES = {
   warlock: { primary:["cha"], secondary:["con"] },
   wizard: { primary:["int"], secondary:["con","dex"] }
 };
-const EDITIONS = [{ value:"2014", label:"2014 / Legacy" }, { value:"2024", label:"2024 / 5.5e" }, { value:"all", label:"All editions" }];
+const EDITIONS = [{ value:"2014", label:"2014" }, { value:"2024", label:"2024" }, { value:"all", label:"All" }];
+const LIST_STEPS = ["species","background","class","subclass","feats","spells","equipment"];
+/** Multi-select steps get an "Add Custom …" button that opens Custom Content preset to this item type. */
+const MULTI_CUSTOM = { feats:{ type:"feat", label:"Feat" }, spells:{ type:"spell", label:"Spell" }, equipment:{ type:"equipment", label:"Item" } };
+const FEAT_CATEGORIES = [
+  { value:"", label:"All categories" }, { value:"origin", label:"Origin" }, { value:"general", label:"General" },
+  { value:"fightingStyle", label:"Fighting Style" }, { value:"epicBoon", label:"Epic Boon" }
+];
+const FEAT_CATEGORY_LABELS = { origin:"Origin", general:"General", fightingStyle:"Fighting Style", epicBoon:"Epic Boon" };
+const SPELL_LEVELS = [
+  { value:"low", label:"Cantrips & 1st level" }, { value:"0", label:"Cantrips" },
+  ...[1,2,3,4,5,6,7,8,9].map(n => ({ value:String(n), label:"Level "+n })), { value:"all", label:"All levels" }
+];
+/** Weapons and armor that only monsters and vehicles use. */
+const NON_PLAYER_EQUIPMENT = ["natural","siege","vehicle"];
+const CLASS_NAMES = { artificer:"Artificer", barbarian:"Barbarian", bard:"Bard", cleric:"Cleric", druid:"Druid", fighter:"Fighter", monk:"Monk", paladin:"Paladin", ranger:"Ranger", rogue:"Rogue", sorcerer:"Sorcerer", warlock:"Warlock", wizard:"Wizard" };
+/**
+ * Feats that suit each class or species, by name (2014 and 2024 names).
+ * Only feats that exist in your compendiums appear; the SRD itself has few feats.
+ */
+const FEAT_RECOMMENDATIONS = {
+  class: {
+    artificer: ["Alert","War Caster","Resilient","Lucky","Magic Initiate","Fey Touched","Tough","Skilled"],
+    barbarian: ["Great Weapon Master","Savage Attacker","Tough","Sentinel","Polearm Master","Grappler","Mobile","Charger","Crusher","Alert","Great Weapon Fighting"],
+    bard: ["War Caster","Inspiring Leader","Lucky","Alert","Magic Initiate","Skilled","Resilient","Fey Touched","Musician","Actor"],
+    cleric: ["War Caster","Resilient","Alert","Magic Initiate","Heavily Armored","Fey Touched","Healer","Tough","Lucky"],
+    druid: ["War Caster","Resilient","Alert","Magic Initiate","Telekinetic","Fey Touched","Tough","Healer","Lucky"],
+    fighter: ["Great Weapon Master","Sharpshooter","Polearm Master","Sentinel","Crossbow Expert","Savage Attacker","Tough","Alert","Lucky","Shield Master","Heavy Armor Master","Dual Wielder","Archery","Defense","Great Weapon Fighting","Two-Weapon Fighting","Ability Score Improvement"],
+    monk: ["Mobile","Alert","Tough","Sentinel","Lucky","Savage Attacker","Grappler","Speedy","Crusher","Skulker"],
+    paladin: ["Great Weapon Master","Polearm Master","Sentinel","Shield Master","War Caster","Heavy Armor Master","Inspiring Leader","Resilient","Defense","Great Weapon Fighting","Tough","Alert"],
+    ranger: ["Sharpshooter","Crossbow Expert","Alert","Archery","Two-Weapon Fighting","Dual Wielder","Mobile","Skulker","Magic Initiate","Lucky","Fey Touched","Tough"],
+    rogue: ["Alert","Mobile","Skulker","Sharpshooter","Crossbow Expert","Lucky","Skilled","Dual Wielder","Piercer","Savage Attacker","Tough"],
+    sorcerer: ["War Caster","Elemental Adept","Spell Sniper","Resilient","Alert","Lucky","Metamagic Adept","Fey Touched","Magic Initiate","Tough"],
+    warlock: ["War Caster","Spell Sniper","Elemental Adept","Resilient","Alert","Lucky","Fey Touched","Shadow Touched","Inspiring Leader","Tough"],
+    wizard: ["War Caster","Resilient","Alert","Lucky","Elemental Adept","Spell Sniper","Magic Initiate","Fey Touched","Telekinetic","Ritual Caster","Tough"]
+  },
+  species: {
+    dragonborn: ["Dragon Fear","Dragon Hide"],
+    dwarf: ["Dwarven Fortitude","Squat Nimbleness"],
+    elf: ["Elven Accuracy","Drow High Magic","Fey Teleportation","Wood Elf Magic"],
+    "half-elf": ["Elven Accuracy","Prodigy"],
+    gnome: ["Fade Away","Squat Nimbleness"],
+    halfling: ["Bountiful Luck","Second Chance","Squat Nimbleness"],
+    "half-orc": ["Orcish Fury","Prodigy"],
+    human: ["Prodigy"],
+    tiefling: ["Flames of Phlegethos","Infernal Constitution"]
+  }
+};
+/** Highlight color per class, used for "good for your class" picks. */
+const CLASS_COLORS = {
+  artificer:"#d8963c", barbarian:"#ff7a29", bard:"#e98bd1", cleric:"#f2c94c", druid:"#b0875a", fighter:"#9fb0c0",
+  monk:"#26c6da", paladin:"#a9c4ff", ranger:"#39d353", rogue:"#b9b9b9", sorcerer:"#ff4d4d", warlock:"#9b6bff", wizard:"#3d8bff"
+};
+/** D&D Beyond item rarity colors. */
+const RARITIES = {
+  common:{ label:"Common", color:"#c8c8c8" }, uncommon:{ label:"Uncommon", color:"#1fc219" }, rare:{ label:"Rare", color:"#4990e2" },
+  veryRare:{ label:"Very Rare", color:"#9810e0" }, legendary:{ label:"Legendary", color:"#fea227" }, artifact:{ label:"Artifact", color:"#be8972" }
+};
+const RARITY_FILTERS = [{ value:"", label:"Any rarity" }, { value:"mundane", label:"Mundane (no rarity)" }, { value:"magic", label:"Any magic item" },
+  ...Object.entries(RARITIES).map(([value, r]) => ({ value, label:r.label }))];
+/** Starting gear that suits each class, by item name. */
+const EQUIPMENT_RECOMMENDATIONS = {
+  artificer: ["Light Crossbow","Crossbow Bolts","Studded Leather Armor","Scale Mail","Thieves' Tools","Tinker's Tools","Dungeoneer's Pack","Dagger"],
+  barbarian: ["Greataxe","Handaxe","Javelin","Greatsword","Maul","Explorer's Pack"],
+  bard: ["Rapier","Dagger","Leather Armor","Lute","Entertainer's Pack","Diplomat's Pack","Flute","Lyre"],
+  cleric: ["Mace","Warhammer","Scale Mail","Chain Mail","Shield","Holy Symbol","Amulet","Emblem","Reliquary","Light Crossbow","Priest's Pack"],
+  druid: ["Scimitar","Quarterstaff","Sickle","Leather Armor","Shield","Druidic Focus","Sprig of Mistletoe","Wooden Staff","Herbalism Kit","Explorer's Pack"],
+  fighter: ["Longsword","Greatsword","Chain Mail","Shield","Longbow","Arrows","Light Crossbow","Handaxe","Halberd","Glaive","Dungeoneer's Pack"],
+  monk: ["Shortsword","Quarterstaff","Spear","Dart","Explorer's Pack","Dungeoneer's Pack"],
+  paladin: ["Longsword","Greatsword","Warhammer","Chain Mail","Shield","Javelin","Holy Symbol","Priest's Pack"],
+  ranger: ["Longbow","Arrows","Quiver","Shortsword","Scimitar","Scale Mail","Leather Armor","Studded Leather Armor","Druidic Focus","Explorer's Pack"],
+  rogue: ["Rapier","Shortsword","Shortbow","Arrows","Dagger","Leather Armor","Thieves' Tools","Burglar's Pack"],
+  sorcerer: ["Dagger","Light Crossbow","Quarterstaff","Arcane Focus","Crystal","Orb","Component Pouch","Explorer's Pack"],
+  warlock: ["Dagger","Light Crossbow","Leather Armor","Arcane Focus","Component Pouch","Scholar's Pack"],
+  wizard: ["Quarterstaff","Dagger","Spellbook","Arcane Focus","Component Pouch","Scholar's Pack"]
+};
+/**
+ * Level 1 spellcasting by class and edition.
+ * prepared: a number, or { ability, plus } for "ability modifier + plus" (minimum 1).
+ */
+const SPELLCASTING = {
+  "2014": {
+    artificer: { ability:"int", cantrips:2, prepared:{ ability:"int", plus:0 }, slots:2, mode:"prepared" },
+    bard: { ability:"cha", cantrips:2, prepared:4, slots:2, mode:"known" },
+    cleric: { ability:"wis", cantrips:3, prepared:{ ability:"wis", plus:1 }, slots:2, mode:"prepared" },
+    druid: { ability:"wis", cantrips:2, prepared:{ ability:"wis", plus:1 }, slots:2, mode:"prepared" },
+    paladin: { ability:"cha", cantrips:0, prepared:0, slots:0, mode:"none", note:"Paladins start casting at level 2." },
+    ranger: { ability:"wis", cantrips:0, prepared:0, slots:0, mode:"none", note:"Rangers start casting at level 2." },
+    sorcerer: { ability:"cha", cantrips:4, prepared:2, slots:2, mode:"known" },
+    warlock: { ability:"cha", cantrips:2, prepared:2, slots:1, mode:"known", pact:true },
+    wizard: { ability:"int", cantrips:3, prepared:{ ability:"int", plus:1 }, spellbook:6, slots:2, mode:"prepared" }
+  },
+  "2024": {
+    artificer: { ability:"int", cantrips:2, prepared:2, slots:2, mode:"prepared" },
+    bard: { ability:"cha", cantrips:2, prepared:4, slots:2, mode:"prepared" },
+    cleric: { ability:"wis", cantrips:3, prepared:4, slots:2, mode:"prepared" },
+    druid: { ability:"wis", cantrips:2, prepared:4, slots:2, mode:"prepared" },
+    paladin: { ability:"cha", cantrips:0, prepared:2, slots:2, mode:"prepared" },
+    ranger: { ability:"wis", cantrips:0, prepared:2, slots:2, mode:"prepared" },
+    sorcerer: { ability:"cha", cantrips:4, prepared:2, slots:2, mode:"prepared" },
+    warlock: { ability:"cha", cantrips:2, prepared:2, slots:1, mode:"prepared", pact:true },
+    wizard: { ability:"int", cantrips:3, prepared:4, spellbook:6, slots:2, mode:"prepared" }
+  }
+};
+const ALIGNMENTS = ["Lawful Good","Neutral Good","Chaotic Good","Lawful Neutral","True Neutral","Chaotic Neutral","Lawful Evil","Neutral Evil","Chaotic Evil","Unaligned"];
+const DETAIL_FIELDS = {
+  physical: [["gender","Gender"],["age","Age"],["height","Height"],["weight","Weight"],["eyes","Eyes"],["hair","Hair"],["skin","Skin"],["faith","Faith"]],
+  personality: [["trait","Personality Traits"],["ideal","Ideals"],["bond","Bonds"],["flaw","Flaws"]]
+};
+function ordinal(n) { return n === 1 ? "1st" : n === 2 ? "2nd" : n === 3 ? "3rd" : n + "th"; }
+
+const SPECIES_NAMES = { dragonborn:"Dragonborn", dwarf:"Dwarf", elf:"Elf", "half-elf":"Half-Elf", gnome:"Gnome", halfling:"Halfling", "half-orc":"Half-Orc", human:"Human", tiefling:"Tiefling" };
+/** Species whose 2024 version grants an Origin feat, so origin feats are recommended. */
+const ORIGIN_FEAT_SPECIES = ["human"];
+
+function normalizeName(name) {
+  return String(name || "").toLowerCase().replace(/[’']/g,"").replace(/[^a-z0-9]+/g," ").trim();
+}
+
+/** Match a species name like "Elf, High" or "Lightfoot Halfling" to a recommendation key. */
+function speciesKey(name) {
+  const n = String(name || "").toLowerCase();
+  for (const key of ["half-elf","half-orc","dragonborn","halfling","tiefling","gnome","dwarf","human","elf"]) {
+    const pattern = new RegExp("(^|[^a-z])" + key.replace("-", "[- ]?") + "($|[^a-z])");
+    if (pattern.test(n)) return key;
+  }
+  return "";
+}
 const TYPE_MAP = {
   species: ["race","species"],
   background: ["background"],
@@ -48,7 +175,7 @@ const TYPE_MAP = {
   subclass: ["subclass"],
   feats: ["feat"],
   spells: ["spell"],
-  equipment: ["equipment","weapon","consumable","tool","loot"]
+  equipment: ["equipment","weapon","consumable","tool","loot","container"]
 };
 
 class CharacterBuilder extends HandlebarsApplicationMixin(ApplicationV2) {
@@ -64,6 +191,11 @@ class CharacterBuilder extends HandlebarsApplicationMixin(ApplicationV2) {
       create: CharacterBuilder.createCharacter,
       custom: CharacterBuilder.customContent,
       filterSource: CharacterBuilder.filterSource,
+      edition: CharacterBuilder.setEdition,
+      goto: CharacterBuilder.gotoStep,
+      removePick: CharacterBuilder.removePick,
+      srdToggle: CharacterBuilder.toggleSrd,
+      multiCustom: CharacterBuilder.openMultiCustom,
       abilityMethod: CharacterBuilder.setAbilityMethod,
       pointBuy: CharacterBuilder.adjustPointBuy,
       rollAbilities: CharacterBuilder.rollAbilities,
@@ -83,6 +215,12 @@ class CharacterBuilder extends HandlebarsApplicationMixin(ApplicationV2) {
     this.sourceFilter = {};
     this.showCustom = {};
     this.editionFilter = {};
+    this.srdOnly = {};
+    this.search = {};
+    this.classFilter = {};
+    this.featCategory = "";
+    this.spellLevel = "low";
+    this.rarity = "";
     this.draft = {
       rules: "2024", name: "", img: "", species: "",
       custom: {
@@ -97,7 +235,8 @@ class CharacterBuilder extends HandlebarsApplicationMixin(ApplicationV2) {
       arrayAssign: { str:"", dex:"", con:"", int:"", wis:"", cha:"" },
       rolled: [],
       rollAssign: { str:"", dex:"", con:"", int:"", wis:"", cha:"" },
-      feats: [], spells: [], equipment: [], details: ""
+      feats: [], spells: [], equipment: [], details: "",
+      info: { alignment:"", gender:"", age:"", height:"", weight:"", eyes:"", hair:"", skin:"", faith:"", trait:"", ideal:"", bond:"", flaw:"", appearance:"" }
     };
   }
 
@@ -136,21 +275,45 @@ class CharacterBuilder extends HandlebarsApplicationMixin(ApplicationV2) {
     this._sanitizeDraftSelections();
     const step = STEPS[this.stepIndex];
     const edition = this.editionFilter[step] || this.draft.rules;
-    const allRows = (this.catalog[step] || []).filter(r => edition === "all" || !r.rules || r.rules === edition);
+    const srdOnly = !!this.srdOnly[step];
+    let allRows = (this.catalog[step] || []).filter(r => (edition === "all" || !r.rules || r.rules === edition) && (!srdOnly || r.srd));
+    const extra = LIST_STEPS.includes(step) ? this._stepFilters(step, allRows) : {};
+    if (extra.filter) allRows = allRows.filter(extra.filter);
     const sources = [...new Set(allRows.map(r => r.source))].sort((a,b) => a.localeCompare(b));
     let activeSource = this.sourceFilter[step] || "";
     if (activeSource && !sources.includes(activeSource)) activeSource = this.sourceFilter[step] = "";
-    const rows = activeSource ? allRows.filter(r => r.source === activeSource) : allRows;
+    let rows = activeSource ? allRows.filter(r => r.source === activeSource) : allRows;
+    const search = (this.search[step] || "").trim().toLowerCase();
+    rows = rows.map(r => ({ ...r, recommended: !!extra.recommended?.(r), hidden: !!search && !r.name.toLowerCase().includes(search),
+      categoryLabel: FEAT_CATEGORY_LABELS[r.category] || "",
+      rarityLabel: RARITIES[r.rarity]?.label || "", rarityColor: RARITIES[r.rarity]?.color || "", levelLabel: r.type === "spell" && r.level !== null ? (r.level === 0 ? "Cantrip" : ordinal(r.level) + " Level") : "",
+      levelClass: r.type === "spell" && r.level !== null ? "lvl-" + r.level : "", searchName: r.name.toLowerCase() }));
+    if (extra.recommended) rows.sort((a,b) => (b.recommended - a.recommended) || a.name.localeCompare(b.name));
     const customStep = CUSTOM_STEPS[step];
     return {
       step, stepNumber: this.stepIndex + 1, totalSteps: STEPS.length,
       stepTitle: STEP_LABELS[step] || step,
-      stepList: STEPS.map((key, i) => ({ label: STEP_LABELS[key] || key, active: i === this.stepIndex, done: i < this.stepIndex })),
+      stepList: STEPS.map((key, i) => ({ key, label: STEP_LABELS[key] || key, active: i === this.stepIndex, done: i < this.stepIndex })),
       draft: this.draft, rows,
       sourceButtons: sources.length > 1 ? [{ label:"All", value:"", count:allRows.length, active:!activeSource },
         ...sources.map(src => ({ label:src, value:src, count:allRows.filter(r => r.source === src).length, active:src === activeSource }))] : [],
       isList: ["species","background","class","subclass","feats","spells","equipment"].includes(step),
-      editions: EDITIONS.map(e => ({ ...e, selected: e.value === edition })),
+      editions: EDITIONS.map(e => ({ ...e, active: e.value === edition })),
+      srdOnly, search: this.search[step] || "",
+      classOptions: extra.classOptions || null, classNote: extra.note || "",
+      featCategories: step === "feats" ? FEAT_CATEGORIES.map(c => ({ ...c, selected: c.value === this.featCategory })) : null,
+      spellLevels: step === "spells" ? SPELL_LEVELS.map(l => ({ ...l, selected: l.value === this.spellLevel })) : null,
+      multiCustom: MULTI_CUSTOM[step] || null,
+      isSpells: step === "spells",
+      selectedLevels: step === "spells" ? JSON.stringify(this._selectedSpellLevels()) : "",
+      spellInfo: step === "spells" || step === "review" ? this._spellAllowance() : null,
+      alignments: ALIGNMENTS.map(a => ({ value:a, selected:a === this.draft.info.alignment })),
+      physicalFields: DETAIL_FIELDS.physical.map(([key,label]) => ({ key, label, value:this.draft.info[key] })),
+      personalityFields: DETAIL_FIELDS.personality.map(([key,label]) => ({ key, label, value:this.draft.info[key] })),
+      rarities: step === "equipment" ? RARITY_FILTERS.map(r => ({ ...r, selected: r.value === this.rarity })) : null,
+      recColor: extra.color || "#39ff14",
+      recFor: [this._selectedClassName || (this.draft.class === CUSTOM_ID ? this.draft.custom.class.name : ""), step === "feats" ? SPECIES_NAMES[this._speciesKey()] : ""].filter(Boolean).join(" / "),
+      recommendedCount: rows.filter(r => r.recommended && !r.hidden).length,
       hitDice: ["d6","d8","d10","d12"].map(d => ({ value:d, selected: d === this.draft.custom.class.hitDie })),
       customStep, custom: customStep ? this.draft.custom[step] : null,
       customSelected: !!customStep && this.draft[step] === CUSTOM_ID,
@@ -189,14 +352,129 @@ class CharacterBuilder extends HandlebarsApplicationMixin(ApplicationV2) {
     for (const pack of game.packs || []) {
       if (pack.documentName !== "Item") continue;
       try {
-        const index = await pack.getIndex({ fields:["type","system.identifier","system.classIdentifier","system.source.rules","flags."+MODULE_ID+".rules"] });
-        for (const item of index) if (allTypes.includes(item.type)) {
-          rows.push({ uuid:"Compendium."+pack.collection+"."+item._id, name:item.name, type:item.type, source:pack.metadata.label || pack.collection,
-            identifier:item.system?.identifier || "", classIdentifier:item.system?.classIdentifier || "", rules:CharacterBuilder.detectEdition(item, pack) });
-        }
+        const index = await pack.getIndex({ fields:["img","type","system.identifier","system.classIdentifier","system.source.rules","system.type.value","system.type.subtype","system.level","system.rarity",
+          "flags."+MODULE_ID+".rules","flags."+MODULE_ID+".homebrew","flags."+MODULE_ID+".featureOf"] });
+        for (const item of index) if (allTypes.includes(item.type)) rows.push(CharacterBuilder.makeRow(item, "Compendium."+pack.collection+"."+item._id, pack));
       } catch (err) { console.debug(MODULE_ID, "Skipped pack", pack.collection); }
     }
     return this._packCache = rows;
+  }
+
+  /** One catalog row from a world Item or a compendium index entry. */
+  static makeRow(item, uuid, pack) {
+    const flags = item.flags?.[MODULE_ID] || {};
+    const type = item.system?.type || {};
+    return {
+      uuid, name:item.name, type:item.type, img:item.img || "icons/svg/item-bag.svg",
+      source: pack ? (pack.metadata.label || pack.collection) : (flags.homebrew ? "Homebrew" : "World"),
+      identifier:item.system?.identifier || "", classIdentifier:item.system?.classIdentifier || "",
+      rules:CharacterBuilder.detectEdition(item, pack),
+      kind:type.value || "", category:type.subtype || "",
+      level: typeof item.system?.level === "number" ? item.system.level : null,
+      srd: !!pack && pack.collection.startsWith("dnd5e."),
+      rarity: item.system?.rarity || "",
+      monsterPack: !!pack && /monster|bestiar|creature|npc/i.test(pack.collection + " " + (pack.metadata.label || "")),
+      homebrew: !!flags.homebrew, featureOf: flags.featureOf || ""
+    };
+  }
+
+  /** Names → normalized, for recommendation lookups. */
+  static nameSet(names) { return new Set((names || []).map(normalizeName)); }
+
+  static nameMatches(set, name) {
+    const n = normalizeName(name);
+    if (set.has(n)) return true;
+    for (const rec of set) if (n.startsWith(rec + " ")) return true;
+    return false;
+  }
+
+  _speciesKey() {
+    if (this.draft.species === CUSTOM_ID) return speciesKey(this.draft.custom.species.name);
+    const row = (this.catalog.species || []).find(r => r.uuid === this.draft.species);
+    return speciesKey(row?.name);
+  }
+
+  /** Class identifiers to offer in "for class" dropdowns: known classes plus any in the catalog. */
+  _classChoices() {
+    const map = new Map(Object.entries(CLASS_NAMES));
+    for (const row of this.catalog.class || []) {
+      const id = row.identifier || foundry.utils.slugify(row.name, { strict:true });
+      if (id && !map.has(id)) map.set(id, row.name);
+    }
+    if (this.draft.class === CUSTOM_ID && this.draft.custom.class.name) map.set(this._classIdentifier(), this.draft.custom.class.name);
+    return [...map.entries()].sort((a,b) => a[1].localeCompare(b[1]));
+  }
+
+  _spellListIds(classId) {
+    const list = globalThis.dnd5e?.registry?.spellLists?.forType?.("class", classId);
+    if (!list) return null;
+    try { return new Set(list.identifiers); } catch (err) { return null; }
+  }
+
+  /**
+   * Extra filters for list steps: the class/species dropdown, what is recommended (highlighted
+   * in the class color), feat category, spell level and item rarity.
+   */
+  _stepFilters(step, rows) {
+    const classId = this._classIdentifier();
+    const choice = this.classFilter[step] ?? (classId && step === "spells" ? "class:" + classId : "all");
+    const color = CLASS_COLORS[classId] || "#39ff14";
+    const out = { color };
+    const options = [{ value:"all", label: step === "spells" ? "All spells" : step === "feats" ? "All feats" : step === "equipment" ? "All items" : "Everything", selected: choice === "all" }];
+    if (["feats","spells","equipment"].includes(step)) {
+      options.push(...this._classChoices().map(([id, name]) => ({ value:"class:"+id, label:(step === "spells" ? name + " spell list" : "Good for " + name) + (id === classId ? " (your class)" : ""), selected: choice === "class:"+id })));
+    }
+    if (step === "feats") {
+      options.push(...Object.entries(SPECIES_NAMES).map(([key, name]) => ({ value:"species:"+key, label:"Good for " + name + (key === this._speciesKey() ? " (your species)" : ""), selected: choice === "species:"+key, group:"species" })));
+    }
+    out.classOptions = options.length > 1 ? options : null;
+
+    const featRecs = (kind, key) => {
+      const names = FEAT_RECOMMENDATIONS[kind]?.[key];
+      const set = CharacterBuilder.nameSet(names);
+      const origin = kind === "species" && ORIGIN_FEAT_SPECIES.includes(key) && this.draft.rules === "2024";
+      return r => CharacterBuilder.nameMatches(set, r.name) || (origin && r.category === "origin");
+    };
+    const filters = [];
+    let [kind, key] = choice === "all" ? [null, null] : choice.split(":");
+
+    if (step === "feats") {
+      if (this.featCategory) filters.push(r => r.category === this.featCategory);
+      if (kind) filters.push(featRecs(kind, key));
+      const byClass = classId ? featRecs("class", classId) : null;
+      const bySpecies = this._speciesKey() ? featRecs("species", this._speciesKey()) : null;
+      out.recommended = r => !!(byClass?.(r) || bySpecies?.(r));
+    }
+    if (step === "spells") {
+      if (this.spellLevel === "low") filters.push(r => r.level === null || r.level <= 1);
+      else if (this.spellLevel !== "all") filters.push(r => r.level === Number(this.spellLevel));
+      const idsFor = id => this._spellListIds(id);
+      const inList = (ids, r) => ids.has(r.identifier || normalizeName(r.name).replace(/ /g,"-"));
+      if (kind === "class") {
+        const ids = idsFor(key);
+        if (ids) filters.push(r => inList(ids, r) || r.homebrew);
+        else out.note = "No spell list is registered for " + (CLASS_NAMES[key] || key) + ", so all spells are shown.";
+      }
+      const mine = classId ? idsFor(classId) : null;
+      if (mine) out.recommended = r => inList(mine, r);
+    }
+    if (step === "equipment") {
+      if (this.rarity === "mundane") filters.push(r => !r.rarity);
+      else if (this.rarity === "magic") filters.push(r => !!r.rarity);
+      else if (this.rarity) filters.push(r => r.rarity === this.rarity);
+      if (kind === "class") { const set = CharacterBuilder.nameSet(EQUIPMENT_RECOMMENDATIONS[key]); filters.push(r => CharacterBuilder.nameMatches(set, r.name)); }
+      if (classId) { const set = CharacterBuilder.nameSet(EQUIPMENT_RECOMMENDATIONS[classId]); out.recommended = r => CharacterBuilder.nameMatches(set, r.name); }
+    }
+    if (filters.length) out.filter = r => filters.every(f => f(r));
+    return out;
+  }
+
+  /** Is this row something a player picks on this step (no monster or class features, no natural weapons)? */
+  static isPlayerOption(key, row) {
+    if (row.monsterPack && ["feats","equipment","spells"].includes(key)) return false;
+    if (key === "feats") return row.kind === "feat" || (!row.kind && row.homebrew && !row.featureOf);
+    if (key === "equipment") return !NON_PLAYER_EQUIPMENT.includes(row.kind);
+    return true;
   }
 
   _classIdentifier() {
@@ -206,10 +484,7 @@ class CharacterBuilder extends HandlebarsApplicationMixin(ApplicationV2) {
 
   async _scanContent() {
     const worldRows = [];
-    for (const item of game.items || []) {
-      worldRows.push({ uuid:item.uuid, name:item.name, type:item.type, source:item.flags?.[MODULE_ID]?.homebrew ? "Homebrew" : "World",
-        identifier:item.system?.identifier || "", classIdentifier:item.system?.classIdentifier || "", rules:CharacterBuilder.detectEdition(item) });
-    }
+    for (const item of game.items || []) worldRows.push(CharacterBuilder.makeRow(item, item.uuid, null));
     const allRows = [...worldRows, ...await this._packRows()];
     if (this.draft.class && this.draft.class !== CUSTOM_ID) {
       const chosen = await fromUuid(this.draft.class);
@@ -221,7 +496,7 @@ class CharacterBuilder extends HandlebarsApplicationMixin(ApplicationV2) {
       this._selectedClassIdentifier = ""; this._classPrimaryFromItem = []; this._selectedClassName = "";
     }
     for (const [key, types] of Object.entries(TYPE_MAP)) {
-      let rows = allRows.filter(r => types.includes(r.type));
+      let rows = allRows.filter(r => types.includes(r.type) && CharacterBuilder.isPlayerOption(key, r));
       if (key === "subclass") rows = this.draft.class ? rows.filter(r => r.classIdentifier === this._classIdentifier()) : [];
       this.catalog[key] = rows.filter((r,i,a) => a.findIndex(x => x.uuid === r.uuid) === i).sort((a,b) => a.name.localeCompare(b.name) || a.source.localeCompare(b.source));
     }
@@ -250,6 +525,7 @@ class CharacterBuilder extends HandlebarsApplicationMixin(ApplicationV2) {
       if (save) custom.save = save.checked;
     }
     if (get("details") !== undefined) this.draft.details = get("details");
+    for (const key of Object.keys(this.draft.info)) if (get("info-"+key) !== undefined) this.draft.info[key] = get("info-"+key);
     for (const ability of ABILITY_KEYS) {
       if (get(ability) !== undefined) this.draft.abilities[ability] = Math.max(3, Math.min(30, Number(get(ability)) || 10));
       const assigned = root.querySelector('[name="assign-'+ability+'"]');
@@ -268,25 +544,28 @@ class CharacterBuilder extends HandlebarsApplicationMixin(ApplicationV2) {
   }
 
   _review() {
-    const findName = (uuid, key) => {
-      if (!uuid) return "None";
-      if (uuid === CUSTOM_ID && CUSTOM_STEPS[key]) return (this.draft.custom[key].name || "Unnamed") + " (custom)";
-      for (const rows of Object.values(this.catalog)) {
-        const row = rows.find(r => r.uuid === uuid);
-        if (row) return row.name;
-      }
-      return uuid;
+    const rowFor = uuid => { for (const rows of Object.values(this.catalog)) { const r = rows.find(x => x.uuid === uuid); if (r) return r; } return null; };
+    const single = (key, label) => {
+      const value = this.draft[key];
+      const custom = value === CUSTOM_ID && CUSTOM_STEPS[key];
+      const row = custom ? null : rowFor(value);
+      return { step:key, label, value: custom ? (this.draft.custom[key].name || "Unnamed") + " (custom)" : (row?.name || (value ? value : "None")),
+        img: row?.img || "", missing: !value };
     };
+    const multi = (key, label) => ({
+      step:key, label, multi:true, value: this.draft[key].length ? "" : "None",
+      items: this.draft[key].map(uuid => { const r = rowFor(uuid); return { uuid, name:r?.name || uuid, img:r?.img || "", tag: r?.type === "spell" && r.level !== null ? (r.level === 0 ? "Cantrip" : ordinal(r.level)) : (RARITIES[r?.rarity]?.label || ""), color: RARITIES[r?.rarity]?.color || "" }; })
+    });
+    const scores = ABILITY_KEYS.map(k => { const v = this.draft.abilities[k], m = Math.floor((v - 10) / 2); return k.toUpperCase() + " " + v + " (" + (m >= 0 ? "+" : "") + m + ")"; }).join(" · ");
+    const info = this.draft.info;
+    const look = DETAIL_FIELDS.physical.filter(([k]) => info[k]).map(([k,l]) => l + ": " + info[k]).join(" · ");
     return [
-      {label:"Rules",value:this.draft.rules === "2014" ? "D&D 5e 2014 / Legacy" : "D&D 2024 / 5.5e"},
-      {label:"Name",value:this.draft.name || "Unnamed"},
-      {label:"Species / Race",value:findName(this.draft.species, "species")},
-      {label:"Background",value:findName(this.draft.background, "background")},
-      {label:"Class",value:findName(this.draft.class, "class")},
-      {label:"Subclass",value:findName(this.draft.subclass, "subclass")},
-      {label:"Feats",value:String(this.draft.feats.length)},
-      {label:"Spells",value:String(this.draft.spells.length)},
-      {label:"Equipment",value:String(this.draft.equipment.length)}
+      { step:"rules", label:"Rules", value:this.draft.rules === "2014" ? "D&D 5e 2014 / Legacy" : "D&D 2024 / 5.5e" },
+      { step:"identity", label:"Name", value:this.draft.name || "Unnamed", img:this.draft.img || "", missing:!this.draft.name },
+      single("species", "Species / Race"), single("background", "Background"), single("class", "Class"), single("subclass", "Subclass"),
+      { step:"abilities", label:"Abilities", value:scores },
+      multi("feats", "Feats"), multi("spells", "Spells"), multi("equipment", "Equipment"),
+      { step:"details", label:"Details", value:[info.alignment, look].filter(Boolean).join(" · ") || "None" }
     ];
   }
 
@@ -467,6 +746,76 @@ class CharacterBuilder extends HandlebarsApplicationMixin(ApplicationV2) {
     return this.render({ force:true });
   }
 
+  /** Levels of the currently chosen spells, looked up in the catalog. */
+  _selectedSpellLevels() {
+    const byUuid = new Map((this.catalog.spells || []).map(r => [r.uuid, r.level]));
+    const levels = {};
+    for (const uuid of this.draft.spells) levels[uuid] = byUuid.get(uuid) ?? null;
+    return levels;
+  }
+
+  /** How many cantrips and 1st-level spells this class gets at level 1, and how many are picked. */
+  _spellAllowance() {
+    const classId = this._classIdentifier();
+    const className = this._selectedClassName || (this.draft.class === CUSTOM_ID ? this.draft.custom.class.name : "");
+    const table = SPELLCASTING[this.draft.rules] || SPELLCASTING["2024"];
+    const levels = Object.values(this._selectedSpellLevels());
+    const picked = { cantrips: levels.filter(l => l === 0).length, spells: levels.filter(l => l !== 0).length };
+    const caster = table[classId];
+    if (!classId) return { none:true, message:"Pick a class to see how many spells you get.", picked };
+    if (!caster) return { none:true, message: className + " has no spellcasting at level 1. Feats like Magic Initiate can still grant spells.", picked, className };
+    const mod = Math.floor(((this.draft.abilities[caster.ability] ?? 10) - 10) / 2);
+    let spells = typeof caster.prepared === "number" ? caster.prepared : Math.max(1, mod + caster.prepared.plus);
+    let cantrips = caster.cantrips;
+    const bonus = [];
+    const featNames = this.draft.feats.map(uuid => (this.catalog.feats || []).find(r => r.uuid === uuid)?.name || "");
+    if (featNames.some(n => /magic initiate/i.test(n))) { cantrips += 2; spells += 1; bonus.push("Magic Initiate: +2 cantrips, +1 1st-level spell"); }
+    const formula = typeof caster.prepared === "number" ? "" : ABILITY_NAMES[caster.prepared.ability] + " modifier" + (caster.prepared.plus ? " + " + caster.prepared.plus : "") + " (min 1)";
+    return {
+      className, edition: this.draft.rules, ability: ABILITY_NAMES[caster.ability], note: caster.note || "",
+      cantrips, spells, slots: caster.slots, pact: !!caster.pact, spellbook: caster.spellbook || 0,
+      modeLabel: caster.mode === "known" ? "Spells known" : "Prepared spells", formula, bonus,
+      picked, overCantrips: picked.cantrips > cantrips, overSpells: picked.spells > spells,
+      none: caster.mode === "none"
+    };
+  }
+
+  static gotoStep(event, target) {
+    this._collect();
+    const index = STEPS.indexOf(target.dataset.step);
+    if (index < 0) return;
+    this.stepIndex = index;
+    return this.render({ force:true });
+  }
+
+  static removePick(event, target) {
+    this._collect();
+    const { step, uuid } = target.dataset;
+    if (Array.isArray(this.draft[step])) this.draft[step] = this.draft[step].filter(u => u !== uuid);
+    return this.render({ force:true });
+  }
+
+  static setEdition(event, target) {
+    this._collect();
+    this.editionFilter[STEPS[this.stepIndex]] = target.dataset.value;
+    return this.render({ force:true });
+  }
+
+  static toggleSrd() {
+    this._collect();
+    const step = STEPS[this.stepIndex];
+    this.srdOnly[step] = !this.srdOnly[step];
+    return this.render({ force:true });
+  }
+
+  static openMultiCustom() {
+    this._collect();
+    const step = STEPS[this.stepIndex];
+    const preset = MULTI_CUSTOM[step];
+    if (!preset) return;
+    return new CustomContentImporter({ parentBuilder:this, type:preset.type, rules:this.draft.rules, selectStep:step }).render({ force:true });
+  }
+
   static filterSource(event, target) {
     this._collect();
     this.sourceFilter[STEPS[this.stepIndex]] = target.dataset.source || "";
@@ -528,6 +877,36 @@ class CharacterBuilder extends HandlebarsApplicationMixin(ApplicationV2) {
       this.editionFilter[STEPS[this.stepIndex]] = e.target.value;
       this.render({ force:true });
     });
+    const step = STEPS[this.stepIndex];
+    const rerenderOn = (name, apply) => this.element.querySelector('[name="'+name+'"]')?.addEventListener("change", e => { this._collect(); apply(e.target.value); this.render({ force:true }); });
+    rerenderOn("classFilter", v => { this.classFilter[step] = v; });
+    rerenderOn("featCategory", v => { this.featCategory = v; });
+    rerenderOn("spellLevel", v => { this.spellLevel = v; });
+    rerenderOn("rarityFilter", v => { this.rarity = v; });
+    // Search filters the cards in place so typing keeps focus.
+    this.element.querySelector('[name="listSearch"]')?.addEventListener("input", e => {
+      const q = e.target.value.trim().toLowerCase();
+      this.search[step] = e.target.value;
+      let shown = 0;
+      for (const card of this.element.querySelectorAll(".content-list label[data-name]")) {
+        const hide = !!q && !card.dataset.name.includes(q);
+        card.classList.toggle("is-hidden", hide);
+        if (!hide) shown++;
+      }
+      const empty = this.element.querySelector(".search-empty");
+      if (empty) empty.hidden = shown > 0;
+    });
+    // Live cantrip / spell counter while ticking spells.
+    if (step === "spells") this.element.querySelectorAll('input[name="spells"]').forEach(box => box.addEventListener("change", () => {
+      this._collect();
+      const info = this._spellAllowance();
+      for (const [kind, over] of [["cantrips", info.overCantrips], ["spells", info.overSpells]]) {
+        const el = this.element.querySelector('.sa-count[data-kind="'+kind+'"]');
+        if (!el) continue;
+        el.querySelector(".sa-picked").textContent = info.picked[kind];
+        el.classList.toggle("over", !!over);
+      }
+    }));
     this.element.querySelectorAll('select[name^="assign-"]').forEach(el => el.addEventListener("change", e => this._onAssignChange(e)));
     this.element.querySelector('[name="portraitFile"]')?.addEventListener("change", e => this._uploadPortrait(e));
     this.element.querySelector('[name="img"]')?.addEventListener("change", e => {
@@ -574,7 +953,13 @@ class CharacterBuilder extends HandlebarsApplicationMixin(ApplicationV2) {
         name: this.draft.name,
         type: "character",
         ...(this.draft.img ? { img: this.draft.img, prototypeToken: { texture: { src: this.draft.img } } } : {}),
-        system: { abilities },
+        system: {
+          abilities,
+          details: {
+            ...Object.fromEntries(Object.entries(this.draft.info).filter(([, v]) => v)),
+            ...(this.draft.details ? { biography: { value: contentToHtml(this.draft.details, "markdown") } } : {})
+          }
+        },
         flags: { [MODULE_ID]: { rules:this.draft.rules, details:this.draft.details } }
       });
       // Species, background, class, then subclass, so a subclass always finds its class.
@@ -697,8 +1082,9 @@ class CustomContentImporter extends HandlebarsApplicationMixin(ApplicationV2) {
 
   constructor(options={}) {
     super(options);
-    this.data = { rules:"2024", type:"feat", name:"", description:"", format:"markdown", identifier:"", classIdentifier:"", featureNames:"" };
+    this.data = { rules:options.rules || "2024", type:options.type || "feat", name:"", description:"", format:"markdown", identifier:"", classIdentifier:"", featureNames:"" };
     this.parentBuilder = options.parentBuilder || null;
+    this.selectStep = options.selectStep || null;
   }
 
   async _prepareContext() {
@@ -821,6 +1207,7 @@ class CustomContentImporter extends HandlebarsApplicationMixin(ApplicationV2) {
     if (!this.data.name.trim()) return ui.notifications.warn("Enter a content name.");
     const system = { description:{ value:contentToHtml(this.data.description, this.data.format), chat:"" } };
     if (["class","subclass"].includes(this.data.type)) system.identifier = this.data.identifier || foundry.utils.slugify(this.data.name,{strict:true});
+    if (this.data.type === "feat") system.type = { value:"feat", subtype:"" };
     if (this.data.type === "subclass") {
       if (!this.data.classIdentifier) return ui.notifications.warn("Choose the class this subclass belongs to.");
       system.classIdentifier = this.data.classIdentifier;
@@ -830,14 +1217,19 @@ class CustomContentImporter extends HandlebarsApplicationMixin(ApplicationV2) {
       if (["class","subclass"].includes(this.data.type)) {
         const parentId = this.data.type === "class" ? system.identifier : this.data.classIdentifier;
         for (const name of this.data.featureNames.split(/\r?\n|,/).map(x=>x.trim()).filter(Boolean)) {
-          const feature = await Item.create({ name, type:"feat", system:{ description:{ value:"", chat:"" } }, flags:{ [MODULE_ID]:{ homebrew:true, rules:this.data.rules, featureOf:parentId, featureKind:this.data.type } } });
+          const feature = await Item.create({ name, type:"feat", system:{ description:{ value:"", chat:"" }, type:{ value:"class", subtype:"" } }, flags:{ [MODULE_ID]:{ homebrew:true, rules:this.data.rules, featureOf:parentId, featureKind:this.data.type } } });
           createdFeatures.push(feature);
         }
         if (createdFeatures.length) system.advancement = [{ _id:foundry.utils.randomID(), type:"ItemGrant", configuration:{ items:createdFeatures.map((x,i)=>({ uuid:x.uuid, optional:false, sort:i*10000 })), optional:false, sorting:"m", spell:null }, value:{ ability:null, added:{} }, level:1, title:this.data.type === "class" ? "Class Features" : "Subclass Features", icon:"" }];
       }
       const item = await Item.create({ name:this.data.name.trim(), type:this.data.type, system, flags:{ [MODULE_ID]:{ homebrew:true, rules:this.data.rules } } });
       ui.notifications.info("Added "+item.name+(createdFeatures.length ? " with "+createdFeatures.length+" linked features" : "")+" to the character builder.");
-      if (this.parentBuilder) { this.parentBuilder._packCache = null; await this.parentBuilder.render({ force:true }); }
+      if (this.parentBuilder) {
+        this.parentBuilder._packCache = null;
+        const step = this.selectStep;
+        if (step && Array.isArray(this.parentBuilder.draft[step])) this.parentBuilder.draft[step].push(item.uuid);
+        await this.parentBuilder.render({ force:true });
+      }
       await this.close();
       return item.sheet?.render({ force:true });
     } catch (err) { console.error(MODULE_ID, err); return ui.notifications.error("D&D5e rejected this custom content."); }

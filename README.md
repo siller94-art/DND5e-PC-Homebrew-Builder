@@ -2,6 +2,17 @@
 
 Guided player-character creation for Foundry VTT V14 and the official D&D5e system.
 
+## v0.6.0
+- **Feats, Spells and Equipment** only list player options: monster features, class features and natural/siege weapons are hidden.
+- Every list step has **2014 / 2024 / All** tabs, an **SRD** toggle, a **search bar** and the item's **Foundry icon**.
+- **Add Custom Feat / Spell / Item** buttons open Custom Content preset to that type and tick the new entry when saved.
+- **Class picks are highlighted in the class's color** (Ranger green, Cleric yellow, Wizard blue…). Feats can also be filtered by class or species (e.g. Elven Accuracy for elves), and by category (Origin, General, Fighting Style, Epic Boon).
+- **Spells** default to your class's spell list (from D&D5e's spell list registry) and to cantrips and 1st level. Every spell is labeled Cantrip / 1st Level / 2nd Level…
+- A **spell counter** shows cantrips and prepared/known spells for your class at level 1 in 2014 or 2024 rules, slots, spellbook size, and Magic Initiate bonuses. It turns red if you pick too many.
+- **Equipment** shows item rarity with D&D Beyond's colors (Common, Uncommon, Rare, Very Rare, Legendary, Artifact) and can be filtered by rarity.
+- **Details** has alignment, physical traits, personality traits, ideals, bonds, flaws, appearance and backstory, written straight to the character sheet.
+- **Review** lists every pick with icons, has an **Edit** button on each row, and lets you remove feats, spells or items. Sidebar steps are clickable.
+
 ## v0.5.0
 - **Abilities step** now offers **Point Buy** (27 points, 8–15), **Standard Array** (15, 14, 13, 12, 10, 8), **Roll 4d6** (drop lowest, dice shown) and **Manual**.
 - Picking a score another ability already has swaps the two.
@@ -62,4 +73,4 @@ For a class or subclass without a `features` list, every `### Heading` becomes a
 ## SRD content
 The builder lists whatever is in your D&D5e compendiums, which already include the SRD 5.1 (2014) and SRD 5.2 (2024) races/species, backgrounds and classes. The SRDs only contain a few backgrounds (2024: Acolyte, Criminal, Sage, Soldier; 2014: Acolyte), so use **Add Custom Background** for anything else.
 
-Version: 0.5.0
+Version: 0.6.0

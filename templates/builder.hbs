@@ -3,7 +3,7 @@
   <h2>Build Character</h2>
   <div class="progress">Step {{stepNumber}} of {{totalSteps}}</div>
   <ol>
-    {{#each stepList}}<li class="{{#if active}}active{{/if}} {{#if done}}done{{/if}}">{{label}}</li>{{/each}}
+    {{#each stepList}}<li class="{{#if active}}active{{/if}} {{#if done}}done{{/if}}" data-action="goto" data-step="{{key}}">{{label}}</li>{{/each}}
   </ol>
   <button type="button" data-action="custom"><i class="fas fa-flask"></i> Custom Content</button>
 </aside>
@@ -35,12 +35,40 @@
 {{/if}}
 
 {{#if isList}}
-<nav class="source-filters">
-<label class="edition-filter">Edition<select name="editionFilter">{{#each editions}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}</select></label>
-{{#each sourceButtons}}<button type="button" class="{{#if active}}active{{/if}}" data-action="filterSource" data-source="{{value}}">{{label}} <span>{{count}}</span></button>{{/each}}
-{{#if customStep}}<button type="button" class="add-custom {{#if showCustom}}active{{/if}}" data-action="customEntry"><i class="fas fa-plus"></i> Add Custom {{customStep.label}}</button>{{/if}}
+<nav class="list-toolbar">
+  <div class="edition-tabs">
+    {{#each editions}}<button type="button" class="{{#if active}}active{{/if}}" data-action="edition" data-value="{{value}}">{{label}}</button>{{/each}}
+    <button type="button" class="srd-tab {{#if srdOnly}}active{{/if}}" data-action="srdToggle" title="Show only System Reference Document content"><i class="fas fa-book"></i> SRD</button>
+  </div>
+  <input type="search" name="listSearch" value="{{search}}" placeholder="Search…" autocomplete="off">
+  {{#if classOptions}}<select name="classFilter">{{#each classOptions}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}</select>{{/if}}
+  {{#if featCategories}}<select name="featCategory">{{#each featCategories}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}</select>{{/if}}
+  {{#if spellLevels}}<select name="spellLevel">{{#each spellLevels}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}</select>{{/if}}
+  {{#if rarities}}<select name="rarityFilter">{{#each rarities}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}</select>{{/if}}
+  {{#if customStep}}<button type="button" class="add-custom {{#if showCustom}}active{{/if}}" data-action="customEntry"><i class="fas fa-plus"></i> Add Custom {{customStep.label}}</button>{{/if}}
+  {{#if multiCustom}}<button type="button" class="add-custom" data-action="multiCustom"><i class="fas fa-plus"></i> Add Custom {{multiCustom.label}}</button>{{/if}}
 </nav>
+{{#if sourceButtons.length}}<nav class="source-filters">{{#each sourceButtons}}<button type="button" class="{{#if active}}active{{/if}}" data-action="filterSource" data-source="{{value}}">{{label}} <span>{{count}}</span></button>{{/each}}</nav>{{/if}}
+{{#if recommendedCount}}<p class="rec-legend" style="--rec:{{recColor}}"><span class="rec-dot"></span> Highlighted: good picks for <strong>{{recFor}}</strong> ({{recommendedCount}})</p>{{/if}}
+{{#if classNote}}<p class="list-note">{{classNote}}</p>{{/if}}
+{{#if isSpells}}{{#with spellInfo}}
+<div class="spell-allowance" data-cantrips="{{cantrips}}" data-spells="{{spells}}">
+  {{#if none}}<p>{{#if message}}{{message}}{{else}}{{className}} ({{edition}}): {{note}}{{/if}}</p>
+  {{else}}
+  <div class="sa-head"><strong>{{className}}</strong> · {{edition}} rules · casts with {{ability}}</div>
+  <div class="sa-counters">
+    <span class="sa-count {{#if overCantrips}}over{{/if}}" data-kind="cantrips"><b class="sa-picked">{{picked.cantrips}}</b> / {{cantrips}} Cantrips</span>
+    <span class="sa-count {{#if overSpells}}over{{/if}}" data-kind="spells"><b class="sa-picked">{{picked.spells}}</b> / {{spells}} {{modeLabel}}</span>
+    <span class="sa-slot">{{slots}} {{#if pact}}Pact Magic slot{{else}}1st-level slots{{/if}}</span>
+    {{#if spellbook}}<span class="sa-slot">{{spellbook}} spells in spellbook</span>{{/if}}
+  </div>
+  {{#if formula}}<small>{{modeLabel}} = {{formula}}</small>{{/if}}
+  {{#each bonus}}<small class="sa-bonus">{{this}}</small>{{/each}}
+  {{/if}}
+</div>
+{{/with}}{{/if}}
 {{/if}}
+
 
 {{#if showCustom}}
 <section class="custom-entry">
@@ -54,7 +82,7 @@
 
 {{#if isSingle}}
 <section class="content-list">
-{{#each rows}}<label><input type="radio" name="{{../step}}" value="{{uuid}}" {{#if (eq ../step "species")}}{{#if (eq ../draft.species uuid)}}checked{{/if}}{{/if}}{{#if (eq ../step "background")}}{{#if (eq ../draft.background uuid)}}checked{{/if}}{{/if}}{{#if (eq ../step "class")}}{{#if (eq ../draft.class uuid)}}checked{{/if}}{{/if}}{{#if (eq ../step "subclass")}}{{#if (eq ../draft.subclass uuid)}}checked{{/if}}{{/if}}><span><strong>{{name}}</strong><small>{{source}} · {{type}}</small></span></label>
+{{#each rows}}<label class="pick-card {{#if hidden}}is-hidden{{/if}}" data-name="{{searchName}}"><input type="radio" name="{{../step}}" value="{{uuid}}" {{#if (eq ../step "species")}}{{#if (eq ../draft.species uuid)}}checked{{/if}}{{/if}}{{#if (eq ../step "background")}}{{#if (eq ../draft.background uuid)}}checked{{/if}}{{/if}}{{#if (eq ../step "class")}}{{#if (eq ../draft.class uuid)}}checked{{/if}}{{/if}}{{#if (eq ../step "subclass")}}{{#if (eq ../draft.subclass uuid)}}checked{{/if}}{{/if}}><img class="pick-icon" src="{{img}}" alt="" loading="lazy"><span><strong>{{name}}</strong><small>{{source}}{{#if rules}} · {{rules}}{{/if}}{{#if srd}} · SRD{{/if}}</small></span></label>
 {{else}}<p class="empty">No matching content was found. Add homebrew with <b>Custom Content</b> or enable a compatible D&D5e compendium.</p>{{/each}}
 </section>
 {{/if}}
@@ -107,14 +135,48 @@
 
 {{#if isMulti}}
 <section class="content-list">
-{{#each rows}}<label><input type="checkbox" name="{{../step}}" value="{{uuid}}" {{#if (eq ../step "feats")}}{{#if (includes ../draft.feats uuid)}}checked{{/if}}{{/if}}{{#if (eq ../step "spells")}}{{#if (includes ../draft.spells uuid)}}checked{{/if}}{{/if}}{{#if (eq ../step "equipment")}}{{#if (includes ../draft.equipment uuid)}}checked{{/if}}{{/if}}><span><strong>{{name}}</strong><small>{{source}} · {{type}}</small></span></label>
-{{else}}<p class="empty">No matching content was found for this step.</p>{{/each}}
+{{#each rows}}<label class="pick-card {{#if hidden}}is-hidden{{/if}} {{#if recommended}}recommended{{/if}} {{#if rarityColor}}has-rarity{{/if}}" data-name="{{searchName}}" style="--rec:{{../recColor}};{{#if rarityColor}}--rarity:{{rarityColor}};{{/if}}"><input type="checkbox" name="{{../step}}" value="{{uuid}}" data-level="{{level}}" {{#if (eq ../step "feats")}}{{#if (includes ../draft.feats uuid)}}checked{{/if}}{{/if}}{{#if (eq ../step "spells")}}{{#if (includes ../draft.spells uuid)}}checked{{/if}}{{/if}}{{#if (eq ../step "equipment")}}{{#if (includes ../draft.equipment uuid)}}checked{{/if}}{{/if}}><img class="pick-icon" src="{{img}}" alt="" loading="lazy"><span><strong>{{name}}</strong><small>{{source}}{{#if rules}} · {{rules}}{{/if}}</small>
+<span class="badges">{{#if levelLabel}}<em class="badge {{levelClass}}">{{levelLabel}}</em>{{/if}}{{#if categoryLabel}}<em class="badge cat">{{categoryLabel}}</em>{{/if}}{{#if rarityLabel}}<em class="badge rarity">{{rarityLabel}}</em>{{/if}}{{#if recommended}}<em class="badge rec">★ Good pick</em>{{/if}}</span></span></label>
+{{else}}<p class="empty">No matching content was found for this step. Try another tab, clear the filters, or add your own with <b>Add Custom</b>.</p>{{/each}}
+<p class="empty search-empty" hidden>Nothing matches your search.</p>
 </section>
 {{/if}}
 
-{{#if isDetails}}<section class="form-area"><label>Character Details<textarea name="details" rows="15" placeholder="Appearance, personality, notes, and other details.">{{draft.details}}</textarea></label></section>{{/if}}
+{{#if isDetails}}
+<section class="details-area">
+  <fieldset><legend>Alignment</legend>
+    <div class="alignment-grid">{{#each alignments}}<label class="{{#if selected}}active{{/if}}"><input type="radio" name="info-alignment" value="{{value}}" {{#if selected}}checked{{/if}}>{{value}}</label>{{/each}}</div>
+  </fieldset>
+  <fieldset><legend>Physical</legend>
+    <div class="detail-grid">{{#each physicalFields}}<label>{{label}}<input name="info-{{key}}" value="{{value}}"></label>{{/each}}</div>
+    <label>Appearance<textarea name="info-appearance" rows="3" placeholder="What others notice first…">{{draft.info.appearance}}</textarea></label>
+  </fieldset>
+  <fieldset><legend>Personality</legend>
+    <div class="detail-grid two">{{#each personalityFields}}<label>{{label}}<textarea name="info-{{key}}" rows="3">{{value}}</textarea></label>{{/each}}</div>
+  </fieldset>
+  <fieldset><legend>Backstory <small>(Markdown supported)</small></legend>
+    <textarea name="details" rows="8" placeholder="Where they came from, who they left behind, what they want…">{{draft.details}}</textarea>
+  </fieldset>
+  <small class="details-note">These fill in the Biography and Details tabs of the D&D5e character sheet.</small>
+</section>
+{{/if}}
 
-{{#if isReview}}<section class="review">{{#each review}}<div><strong>{{label}}</strong><span>{{value}}</span></div>{{/each}}<p>Creating the character makes a native D&D5e Character Actor and adds the selected content to it.</p></section>{{/if}}
+{{#if isReview}}
+<section class="review">
+{{#each review}}
+<div class="review-row {{#if missing}}missing{{/if}}">
+  <strong>{{label}}</strong>
+  <span class="review-value">
+    {{#if img}}<img src="{{img}}" alt="">{{/if}}
+    {{#if multi}}{{#each items}}<span class="review-chip" {{#if color}}style="--rarity:{{color}}"{{/if}}>{{#if img}}<img src="{{img}}" alt="">{{/if}}{{name}}{{#if tag}} <em>{{tag}}</em>{{/if}}<button type="button" data-action="removePick" data-step="{{../step}}" data-uuid="{{uuid}}" title="Remove"><i class="fas fa-times"></i></button></span>{{/each}}{{value}}{{else}}{{value}}{{/if}}
+  </span>
+  <button type="button" class="edit" data-action="goto" data-step="{{step}}"><i class="fas fa-pen"></i> Edit</button>
+</div>
+{{/each}}
+{{#with spellInfo}}{{#unless none}}<p class="review-spells {{#if overCantrips}}over{{/if}} {{#if overSpells}}over{{/if}}">Spells: {{picked.cantrips}}/{{cantrips}} cantrips · {{picked.spells}}/{{spells}} {{modeLabel}}</p>{{/unless}}{{/with}}
+<p>Creating the character makes a native D&D5e Character Actor and adds the selected content to it.</p>
+</section>
+{{/if}}
 
 <footer>
 {{#if canBack}}<button type="button" data-action="back"><i class="fas fa-chevron-left"></i> Back</button>{{else}}<span></span>{{/if}}
