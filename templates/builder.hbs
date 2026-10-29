@@ -60,14 +60,49 @@
 {{/if}}
 
 {{#if isAbilities}}
+<nav class="ability-methods">
+{{#each abilityMethods}}<button type="button" class="{{#if active}}active{{/if}}" data-action="abilityMethod" data-method="{{value}}"><i class="fas {{icon}}"></i> {{label}}</button>{{/each}}
+</nav>
+
+{{#if bestFor}}<p class="best-hint"><span class="best-chip">Best for {{bestFor}}</span> {{#if bestPrimary}}<strong>{{bestPrimary}}</strong>{{#if bestSecondary}}, then {{bestSecondary}}{{/if}}{{else}}No class data for this class.{{/if}}</p>
+{{else}}<p class="best-hint muted">Pick a class to see which abilities matter most.</p>{{/if}}
+
+<div class="ability-toolbar">
+  {{#if isPointBuy}}<span class="points {{#if (eq pointsLeft 0)}}done{{/if}}">Points left: <strong>{{pointsLeft}}</strong> / {{pointBudget}}</span>{{/if}}
+  {{#if isStandard}}<span>Assign 15, 14, 13, 12, 10 and 8 — each once.</span>{{/if}}
+  {{#if isRoll}}
+    <button type="button" data-action="rollAbilities"><i class="fas fa-dice"></i> {{#if rolled.length}}Reroll All{{else}}Roll 4d6 ×6{{/if}}</button>
+    {{#if rolled.length}}<span class="rolled">{{#each rolled}}<span class="roll-chip" title="Kept the highest three">{{#each dice}}<i class="{{#if dropped}}dropped{{/if}}">{{value}}</i>{{/each}}<b>{{total}}</b></span>{{/each}}</span>{{/if}}
+  {{/if}}
+  {{#if isManual}}<span>Type any score from 3 to 30.</span>{{/if}}
+  {{#if canSuggest}}<button type="button" class="suggest" data-action="suggestAbilities"><i class="fas fa-wand-magic-sparkles"></i> Suggest for class</button>{{/if}}
+</div>
+
 <section class="ability-grid">
-<label>STR<input type="number" name="str" value="{{draft.abilities.str}}" min="3" max="30"></label>
-<label>DEX<input type="number" name="dex" value="{{draft.abilities.dex}}" min="3" max="30"></label>
-<label>CON<input type="number" name="con" value="{{draft.abilities.con}}" min="3" max="30"></label>
-<label>INT<input type="number" name="int" value="{{draft.abilities.int}}" min="3" max="30"></label>
-<label>WIS<input type="number" name="wis" value="{{draft.abilities.wis}}" min="3" max="30"></label>
-<label>CHA<input type="number" name="cha" value="{{draft.abilities.cha}}" min="3" max="30"></label>
+{{#each abilityRows}}
+<div class="ability-card {{#if primary}}best{{/if}} {{#if secondary}}good{{/if}}">
+  <div class="ability-head"><strong>{{label}}</strong><small>{{name}}</small>{{#if primary}}<span class="best-tag">Best</span>{{/if}}</div>
+  {{#if ../isPointBuy}}
+  <div class="pb-row">
+    <button type="button" data-action="pointBuy" data-ability="{{key}}" data-delta="-1" {{#unless canDec}}disabled{{/unless}}><i class="fas fa-minus"></i></button>
+    <span class="score">{{value}}</span>
+    <button type="button" data-action="pointBuy" data-ability="{{key}}" data-delta="1" {{#unless canInc}}disabled{{/unless}}><i class="fas fa-plus"></i></button>
+  </div>
+  <small class="cost">Cost {{cost}}</small>
+  {{/if}}
+  {{#if ../isAssign}}
+  <select name="assign-{{key}}">
+    <option value="">—</option>
+    {{#each options}}<option value="{{index}}" {{#if selected}}selected{{/if}}>{{value}}{{#if taken}} (from {{takenBy}}){{/if}}</option>{{/each}}
+  </select>
+  {{/if}}
+  {{#if ../isManual}}<input type="number" name="{{key}}" value="{{value}}" min="3" max="30">{{/if}}
+  {{#unless ../isManual}}{{#if ../isPointBuy}}{{else}}{{#if ../isAssign}}{{else}}<span class="score muted">—</span>{{/if}}{{/if}}{{/unless}}
+  <div class="mod">{{#if ../isAssign}}{{#if assigned}}{{value}} ({{mod}}){{else}}&nbsp;{{/if}}{{else}}Modifier {{mod}}{{/if}}</div>
+</div>
+{{/each}}
 </section>
+<p class="ability-note">{{abilityNote}}</p>
 {{/if}}
 
 {{#if isMulti}}

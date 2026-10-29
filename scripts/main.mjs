@@ -13,6 +13,33 @@ const CUSTOM_STEPS = {
   class: { type:"class", label:"Class", placeholder:"Hit points, proficiencies, starting equipment, class features…", hitDie:true },
   subclass: { type:"subclass", label:"Subclass", placeholder:"Subclass features and the level they are gained…" }
 };
+const ABILITY_KEYS = ["str","dex","con","int","wis","cha"];
+const ABILITY_NAMES = { str:"Strength", dex:"Dexterity", con:"Constitution", int:"Intelligence", wis:"Wisdom", cha:"Charisma" };
+const STANDARD_ARRAY = [15,14,13,12,10,8];
+const POINT_BUY_COST = { 8:0, 9:1, 10:2, 11:3, 12:4, 13:5, 14:7, 15:9 };
+const POINT_BUY_BUDGET = 27;
+const ABILITY_METHODS = [
+  { value:"pointbuy", label:"Point Buy", icon:"fa-coins" },
+  { value:"standard", label:"Standard Array", icon:"fa-list-ol" },
+  { value:"roll", label:"Roll 4d6", icon:"fa-dice" },
+  { value:"manual", label:"Manual", icon:"fa-pen" }
+];
+/** Best ability scores per class: primary is highlighted, secondary is a softer hint. */
+const CLASS_ABILITIES = {
+  artificer: { primary:["int"], secondary:["con","dex"] },
+  barbarian: { primary:["str"], secondary:["con"] },
+  bard: { primary:["cha"], secondary:["dex"] },
+  cleric: { primary:["wis"], secondary:["con","str"] },
+  druid: { primary:["wis"], secondary:["con"] },
+  fighter: { primary:["str","dex"], secondary:["con"], either:true },
+  monk: { primary:["dex","wis"], secondary:["con"] },
+  paladin: { primary:["str","cha"], secondary:["con"] },
+  ranger: { primary:["dex","wis"], secondary:["con"] },
+  rogue: { primary:["dex"], secondary:["con","int"] },
+  sorcerer: { primary:["cha"], secondary:["con"] },
+  warlock: { primary:["cha"], secondary:["con"] },
+  wizard: { primary:["int"], secondary:["con","dex"] }
+};
 const EDITIONS = [{ value:"2014", label:"2014 / Legacy" }, { value:"2024", label:"2024 / 5.5e" }, { value:"all", label:"All editions" }];
 const TYPE_MAP = {
   species: ["race","species"],
@@ -37,6 +64,10 @@ class CharacterBuilder extends HandlebarsApplicationMixin(ApplicationV2) {
       create: CharacterBuilder.createCharacter,
       custom: CharacterBuilder.customContent,
       filterSource: CharacterBuilder.filterSource,
+      abilityMethod: CharacterBuilder.setAbilityMethod,
+      pointBuy: CharacterBuilder.adjustPointBuy,
+      rollAbilities: CharacterBuilder.rollAbilities,
+      suggestAbilities: CharacterBuilder.suggestAbilities,
       customEntry: CharacterBuilder.toggleCustom,
       browsePortrait: CharacterBuilder.browsePortrait,
       clearPortrait: CharacterBuilder.clearPortrait
@@ -61,6 +92,11 @@ class CharacterBuilder extends HandlebarsApplicationMixin(ApplicationV2) {
         subclass: { name: "", description: "", save: false }
       }, background: "", class: "", subclass: "",
       abilities: { str:10, dex:10, con:10, int:10, wis:10, cha:10 },
+      abilityMethod: "pointbuy",
+      pointBuy: { str:8, dex:8, con:8, int:8, wis:8, cha:8 },
+      arrayAssign: { str:"", dex:"", con:"", int:"", wis:"", cha:"" },
+      rolled: [],
+      rollAssign: { str:"", dex:"", con:"", int:"", wis:"", cha:"" },
       feats: [], spells: [], equipment: [], details: ""
     };
   }
@@ -124,6 +160,7 @@ class CharacterBuilder extends HandlebarsApplicationMixin(ApplicationV2) {
       isRules: step === "rules", isIdentity: step === "identity",
       isSingle: ["species","background","class","subclass"].includes(step),
       isAbilities: step === "abilities",
+      ...(step === "abilities" ? this._abilityContext() : {}),
       isMulti: ["feats","spells","equipment"].includes(step),
       isDetails: step === "details", isReview: step === "review",
       canBack: this.stepIndex > 0,
@@ -177,6 +214,11 @@ class CharacterBuilder extends HandlebarsApplicationMixin(ApplicationV2) {
     if (this.draft.class && this.draft.class !== CUSTOM_ID) {
       const chosen = await fromUuid(this.draft.class);
       this._selectedClassIdentifier = chosen?.system?.identifier || foundry.utils.slugify(chosen?.name || "", { strict:true });
+      const primary = chosen?.system?.primaryAbility?.value;
+      this._classPrimaryFromItem = primary ? [...primary].filter(k => ABILITY_KEYS.includes(k)) : [];
+      this._selectedClassName = chosen?.name || "";
+    } else if (!this.draft.class) {
+      this._selectedClassIdentifier = ""; this._classPrimaryFromItem = []; this._selectedClassName = "";
     }
     for (const [key, types] of Object.entries(TYPE_MAP)) {
       let rows = allRows.filter(r => types.includes(r.type));
@@ -208,9 +250,12 @@ class CharacterBuilder extends HandlebarsApplicationMixin(ApplicationV2) {
       if (save) custom.save = save.checked;
     }
     if (get("details") !== undefined) this.draft.details = get("details");
-    for (const ability of Object.keys(this.draft.abilities)) {
+    for (const ability of ABILITY_KEYS) {
       if (get(ability) !== undefined) this.draft.abilities[ability] = Math.max(3, Math.min(30, Number(get(ability)) || 10));
+      const assigned = root.querySelector('[name="assign-'+ability+'"]');
+      if (assigned) this._assignMap()[ability] = assigned.value;
     }
+    if (STEPS[this.stepIndex] === "abilities") this._applyAbilityMethod();
     const step = STEPS[this.stepIndex];
     // Only overwrite when something visible is picked, so choices hidden by a filter survive.
     if (["species","background","class","subclass"].includes(step) && get(step)) this.draft[step] = get(step);
@@ -249,6 +294,10 @@ class CharacterBuilder extends HandlebarsApplicationMixin(ApplicationV2) {
     this._collect();
     if (STEPS[this.stepIndex] === "identity" && !this.draft.name) return ui.notifications.warn("Enter a character name.");
     const stepKey = STEPS[this.stepIndex];
+    if (stepKey === "abilities") {
+      const problem = this._abilityProblem();
+      if (problem) return ui.notifications.warn(problem);
+    }
     if (CUSTOM_STEPS[stepKey] && this.draft[stepKey] === CUSTOM_ID && !this.draft.custom[stepKey].name) {
       return ui.notifications.warn("Enter a name for the custom " + CUSTOM_STEPS[stepKey].label.toLowerCase() + ".");
     }
@@ -265,6 +314,156 @@ class CharacterBuilder extends HandlebarsApplicationMixin(ApplicationV2) {
   static async back() {
     this._collect();
     this.stepIndex = Math.max(0, this.stepIndex - 1);
+    return this.render({ force:true });
+  }
+
+  /* ---------------- Ability scores ---------------- */
+
+  _assignMap() {
+    return this.draft.abilityMethod === "roll" ? this.draft.rollAssign : this.draft.arrayAssign;
+  }
+
+  _pool() {
+    return this.draft.abilityMethod === "roll" ? this.draft.rolled.map(r => r.total) : STANDARD_ARRAY;
+  }
+
+  _pointsSpent() {
+    return ABILITY_KEYS.reduce((sum, k) => sum + (POINT_BUY_COST[this.draft.pointBuy[k]] ?? 0), 0);
+  }
+
+  /** Copy the current method's numbers into draft.abilities. */
+  _applyAbilityMethod() {
+    const method = this.draft.abilityMethod;
+    if (method === "manual") return;
+    for (const k of ABILITY_KEYS) {
+      if (method === "pointbuy") this.draft.abilities[k] = this.draft.pointBuy[k];
+      else {
+        const idx = this._assignMap()[k];
+        const value = idx === "" ? undefined : this._pool()[Number(idx)];
+        this.draft.abilities[k] = value ?? 8;
+      }
+    }
+  }
+
+  _abilityProblem() {
+    const method = this.draft.abilityMethod;
+    if (method === "pointbuy" && this._pointsSpent() > POINT_BUY_BUDGET) return "You have spent more than " + POINT_BUY_BUDGET + " points.";
+    if (method === "roll" && this.draft.rolled.length !== 6) return "Roll your ability scores first.";
+    if (method === "standard" || method === "roll") {
+      const map = this._assignMap();
+      if (ABILITY_KEYS.some(k => map[k] === "")) return "Assign a score to every ability.";
+    }
+    return "";
+  }
+
+  _classAbilities() {
+    const known = CLASS_ABILITIES[this._selectedClassIdentifier];
+    if (known) return known;
+    return { primary: this._classPrimaryFromItem || [], secondary: [] };
+  }
+
+  _abilityContext() {
+    const method = this.draft.abilityMethod;
+    const pool = this._pool();
+    const map = this._assignMap();
+    const best = this._classAbilities();
+    const spent = this._pointsSpent();
+    const rows = ABILITY_KEYS.map(k => {
+      const value = method === "manual" ? this.draft.abilities[k] : (method === "pointbuy" ? this.draft.pointBuy[k] : this.draft.abilities[k]);
+      const mod = Math.floor((value - 10) / 2);
+      const pb = this.draft.pointBuy[k];
+      const usedBy = idx => ABILITY_KEYS.find(o => o !== k && map[o] === String(idx));
+      return {
+        key:k, label:k.toUpperCase(), name:ABILITY_NAMES[k], value,
+        mod:(mod >= 0 ? "+" : "") + mod,
+        primary:best.primary.includes(k), secondary:!best.primary.includes(k) && best.secondary.includes(k),
+        assigned: map[k] !== "",
+        canInc: pb < 15 && spent - (POINT_BUY_COST[pb] ?? 0) + (POINT_BUY_COST[pb + 1] ?? 99) <= POINT_BUY_BUDGET,
+        canDec: pb > 8,
+        cost: POINT_BUY_COST[pb] ?? 0,
+        options: pool.map((v, i) => ({ index:String(i), value:v, selected:map[k] === String(i), taken:!!usedBy(i), takenBy:(usedBy(i) || "").toUpperCase() }))
+      };
+    });
+    return {
+      abilityRows: rows,
+      abilityMethods: ABILITY_METHODS.map(m => ({ ...m, active:m.value === method })),
+      isPointBuy: method === "pointbuy", isStandard: method === "standard", isRoll: method === "roll", isManual: method === "manual",
+      isAssign: method === "standard" || (method === "roll" && this.draft.rolled.length === 6),
+      pointsLeft: POINT_BUY_BUDGET - spent, pointBudget: POINT_BUY_BUDGET,
+      rolled: this.draft.rolled,
+      bestFor: this._selectedClassName || (this.draft.class === CUSTOM_ID ? this.draft.custom.class.name : ""),
+      bestPrimary: best.primary.map(k => ABILITY_NAMES[k]).join(best.either ? " or " : " and "),
+      bestSecondary: best.secondary.map(k => ABILITY_NAMES[k]).join(", "),
+      canSuggest: best.primary.length > 0 && method !== "manual" && !(method === "roll" && this.draft.rolled.length !== 6),
+      abilityNote: this.draft.rules === "2024"
+        ? "2024 rules: your background adds +2/+1 (or +1/+1/+1) on top of these scores."
+        : "2014 rules: your race adds its ability bonuses on top of these scores."
+    };
+  }
+
+  static setAbilityMethod(event, target) {
+    this._collect();
+    this.draft.abilityMethod = target.dataset.method;
+    this._applyAbilityMethod();
+    return this.render({ force:true });
+  }
+
+  static adjustPointBuy(event, target) {
+    this._collect();
+    const k = target.dataset.ability, delta = Number(target.dataset.delta);
+    const next = this.draft.pointBuy[k] + delta;
+    if (next < 8 || next > 15) return;
+    const spent = this._pointsSpent() - POINT_BUY_COST[this.draft.pointBuy[k]] + POINT_BUY_COST[next];
+    if (spent > POINT_BUY_BUDGET) return ui.notifications.warn("Not enough points left.");
+    this.draft.pointBuy[k] = next;
+    this._applyAbilityMethod();
+    return this.render({ force:true });
+  }
+
+  static async rollAbilities() {
+    this._collect();
+    const results = [];
+    for (let i = 0; i < 6; i++) {
+      const roll = await new Roll("4d6kh3").evaluate();
+      const dice = roll.dice[0]?.results?.map(r => ({ value:r.result, dropped:!r.active })) ?? [];
+      results.push({ total:roll.total, dice });
+    }
+    this.draft.rolled = results;
+    for (const k of ABILITY_KEYS) this.draft.rollAssign[k] = "";
+    this._applyAbilityMethod();
+    return this.render({ force:true });
+  }
+
+  /** Put the highest scores into the class's best abilities, then Constitution, then the rest. */
+  static suggestAbilities() {
+    this._collect();
+    const best = this._classAbilities();
+    const order = [...new Set([...best.primary, ...best.secondary, "con", "dex", "wis", "str", "cha", "int"])];
+    const method = this.draft.abilityMethod;
+    if (method === "pointbuy") {
+      // Both spreads cost exactly 27 points.
+      const spread = best.primary.length >= 2 && !best.either ? [15, 15, 14, 10, 8, 8] : [15, 14, 13, 12, 10, 8];
+      order.forEach((k, i) => { this.draft.pointBuy[k] = spread[i]; });
+    } else {
+      const pool = this._pool().map((v, i) => ({ v, i })).sort((a, b) => b.v - a.v);
+      const map = this._assignMap();
+      order.forEach((k, i) => { map[k] = String(pool[i].i); });
+    }
+    this._applyAbilityMethod();
+    return this.render({ force:true });
+  }
+
+  /** When a pool value is picked that another ability already has, swap them. */
+  _onAssignChange(event) {
+    const k = event.target.name.replace("assign-", "");
+    const map = this._assignMap();
+    const previous = map[k];
+    const picked = event.target.value;
+    const other = ABILITY_KEYS.find(o => o !== k && map[o] === picked && picked !== "");
+    this._collect();
+    if (other) map[other] = previous;
+    map[k] = picked;
+    this._applyAbilityMethod();
     return this.render({ force:true });
   }
 
@@ -329,6 +528,7 @@ class CharacterBuilder extends HandlebarsApplicationMixin(ApplicationV2) {
       this.editionFilter[STEPS[this.stepIndex]] = e.target.value;
       this.render({ force:true });
     });
+    this.element.querySelectorAll('select[name^="assign-"]').forEach(el => el.addEventListener("change", e => this._onAssignChange(e)));
     this.element.querySelector('[name="portraitFile"]')?.addEventListener("change", e => this._uploadPortrait(e));
     this.element.querySelector('[name="img"]')?.addEventListener("change", e => {
       const preview = this.element.querySelector(".portrait-preview img");
@@ -366,6 +566,7 @@ class CharacterBuilder extends HandlebarsApplicationMixin(ApplicationV2) {
   static async createCharacter() {
     this._collect();
     if (!this.draft.name) return ui.notifications.warn("Enter a character name.");
+    this._applyAbilityMethod();
     try {
       const abilities = {};
       for (const [key,value] of Object.entries(this.draft.abilities)) abilities[key] = { value };

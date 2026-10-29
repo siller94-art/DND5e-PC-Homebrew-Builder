@@ -2,6 +2,12 @@
 
 Guided player-character creation for Foundry VTT V14 and the official D&D5e system.
 
+## v0.5.0
+- **Abilities step** now offers **Point Buy** (27 points, 8–15), **Standard Array** (15, 14, 13, 12, 10, 8), **Roll 4d6** (drop lowest, dice shown) and **Manual**.
+- Picking a score another ability already has swaps the two.
+- The chosen class's best abilities glow neon green (e.g. Ranger: Dexterity and Wisdom), with Constitution and other good picks outlined more softly.
+- **Suggest for class** fills the scores in the best order for your class.
+
 ## v0.4.0
 - **Portrait on the Identity step:** upload an image, browse your files, or paste a path. It is used for the character's portrait and token.
 - **Edition dropdown** on every list step (Species, Background, Class, Subclass, Feats, Spells, Equipment): 2014 / Legacy, 2024 / 5.5e, or All editions. It defaults to the rules you pick on step 1.
@@ -56,4 +62,4 @@ For a class or subclass without a `features` list, every `### Heading` becomes a
 ## SRD content
 The builder lists whatever is in your D&D5e compendiums, which already include the SRD 5.1 (2014) and SRD 5.2 (2024) races/species, backgrounds and classes. The SRDs only contain a few backgrounds (2024: Acolyte, Criminal, Sage, Soldier; 2014: Acolyte), so use **Add Custom Background** for anything else.
 
-Version: 0.4.0
+Version: 0.5.0
