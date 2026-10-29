@@ -21,14 +21,16 @@
 <section class="form-area identity-area">
 <label>Character Name<input name="name" value="{{draft.name}}" placeholder="Character name"></label>
 <div class="portrait-row">
-  <div class="portrait-preview"><img src="{{portrait}}" alt="Character portrait"></div>
+  <div class="portrait-preview" style="--portrait-size:{{draft.portraitSize}}px;--token-scale:{{draft.tokenScale}}" title="Drag the corner to resize"><img src="{{portrait}}" alt="Character portrait"></div>
   <div class="portrait-controls">
     <strong>Portrait</strong>
     <label class="upload-button"><i class="fas fa-upload"></i> Upload Image<input type="file" name="portraitFile" accept="image/*" hidden></label>
     <button type="button" data-action="browsePortrait"><i class="fas fa-folder-open"></i> Browse Files</button>
     {{#if draft.img}}<button type="button" data-action="clearPortrait"><i class="fas fa-times"></i> Remove</button>{{/if}}
     <input name="img" value="{{draft.img}}" placeholder="or paste an image path / URL">
-    <small>Used for the character portrait and token.</small>
+    <label class="range-row">Preview size <input type="range" name="portraitSize" min="120" max="480" step="10" value="{{draft.portraitSize}}"><span class="portrait-size-value">{{draft.portraitSize}} px</span></label>
+    <label class="range-row">Token scale <input type="range" name="tokenScale" min="0.25" max="3" step="0.05" value="{{draft.tokenScale}}"><span class="token-scale-value">{{draft.tokenScale}}×</span></label>
+    <small>Used for the character portrait and token. Token scale sets how big the token looks on the map (1× fills its square).</small>
   </div>
 </div>
 </section>

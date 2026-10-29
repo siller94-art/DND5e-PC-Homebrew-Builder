@@ -222,7 +222,7 @@ class CharacterBuilder extends HandlebarsApplicationMixin(ApplicationV2) {
     this.spellLevel = "low";
     this.rarity = "";
     this.draft = {
-      rules: "2024", name: "", img: "", species: "",
+      rules: "2024", name: "", img: "", portraitSize: 200, tokenScale: 1, species: "",
       custom: {
         species: { name: "", description: "", save: false },
         background: { name: "", description: "", save: false },
@@ -523,6 +523,8 @@ class CharacterBuilder extends HandlebarsApplicationMixin(ApplicationV2) {
     if (get("rules")) this.draft.rules = get("rules");
     if (get("name") !== undefined) this.draft.name = get("name").trim();
     if (get("img") !== undefined) this.draft.img = get("img").trim();
+    if (get("portraitSize") !== undefined) this.draft.portraitSize = Math.max(120, Math.min(480, Number(get("portraitSize")) || 200));
+    if (get("tokenScale") !== undefined) this.draft.tokenScale = Math.max(0.25, Math.min(3, Number(get("tokenScale")) || 1));
     const currentStep = STEPS[this.stepIndex];
     const custom = CUSTOM_STEPS[currentStep] ? this.draft.custom[currentStep] : null;
     if (custom) {
@@ -916,6 +918,27 @@ class CharacterBuilder extends HandlebarsApplicationMixin(ApplicationV2) {
       }
     }));
     this.element.querySelectorAll('select[name^="assign-"]').forEach(el => el.addEventListener("change", e => this._onAssignChange(e)));
+    // Portrait size and token scale update live; dragging the preview corner also resizes it.
+    const preview = this.element.querySelector(".portrait-preview");
+    const sizeInput = this.element.querySelector('[name="portraitSize"]');
+    sizeInput?.addEventListener("input", e => {
+      this.draft.portraitSize = Number(e.target.value);
+      preview?.style.setProperty("--portrait-size", e.target.value + "px");
+      const out = this.element.querySelector(".portrait-size-value"); if (out) out.textContent = e.target.value + " px";
+    });
+    if (preview && sizeInput && globalThis.ResizeObserver) {
+      new ResizeObserver(([entry]) => {
+        const size = Math.round(Math.max(120, Math.min(480, entry.contentRect.width)));
+        if (Math.abs(size - this.draft.portraitSize) < 2) return;
+        this.draft.portraitSize = size; sizeInput.value = size;
+        const out = this.element.querySelector(".portrait-size-value"); if (out) out.textContent = size + " px";
+      }).observe(preview);
+    }
+    this.element.querySelector('[name="tokenScale"]')?.addEventListener("input", e => {
+      this.draft.tokenScale = Number(e.target.value);
+      preview?.style.setProperty("--token-scale", e.target.value);
+      const out = this.element.querySelector(".token-scale-value"); if (out) out.textContent = Number(e.target.value).toFixed(2) + "×";
+    });
     this.element.querySelector('[name="portraitFile"]')?.addEventListener("change", e => this._uploadPortrait(e));
     this.element.querySelector('[name="img"]')?.addEventListener("change", e => {
       const preview = this.element.querySelector(".portrait-preview img");
@@ -960,7 +983,8 @@ class CharacterBuilder extends HandlebarsApplicationMixin(ApplicationV2) {
       const actor = await Actor.create({
         name: this.draft.name,
         type: "character",
-        ...(this.draft.img ? { img: this.draft.img, prototypeToken: { texture: { src: this.draft.img } } } : {}),
+        ...(this.draft.img ? { img: this.draft.img } : {}),
+        prototypeToken: { texture: { ...(this.draft.img ? { src: this.draft.img } : {}), scaleX: this.draft.tokenScale, scaleY: this.draft.tokenScale } },
         system: {
           abilities,
           details: {

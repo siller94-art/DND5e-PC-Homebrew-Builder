@@ -121,3 +121,12 @@
 .review-row .edit{width:auto;padding:3px 10px;border:1px solid var(--pc-line);background:var(--pc-panel);color:#ddd;border-radius:4px}
 .review-spells{margin-top:8px;color:#8dff6e}
 .review-spells.over{color:#ffb3b3}
+
+/* v0.6.2: resizable portrait */
+.portrait-row{grid-template-columns:auto 1fr}
+.dnd5e-pc-character-builder .portrait-preview{--portrait-size:200px;width:var(--portrait-size);height:var(--portrait-size);min-width:120px;min-height:120px;max-width:480px;max-height:480px;resize:both;overflow:hidden;position:relative}
+.portrait-preview img{transform:scale(var(--token-scale,1));transform-origin:center;transition:transform .1s}
+.portrait-controls .upload-button,.dnd5e-pc-character-builder .form-area .portrait-controls label.upload-button{flex-direction:row!important;align-items:center;gap:6px;width:auto}
+.portrait-controls .range-row{display:grid!important;grid-template-columns:90px 1fr 60px;align-items:center;gap:8px;width:100%;flex-direction:row}
+.portrait-controls .range-row input[type=range]{width:100%}
+.portrait-controls .range-row span{text-align:right;color:#ccc;font-variant-numeric:tabular-nums}

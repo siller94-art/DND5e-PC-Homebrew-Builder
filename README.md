@@ -2,6 +2,9 @@
 
 Guided player-character creation for Foundry VTT V14 and the official D&D5e system.
 
+## v0.6.2
+- Portrait preview is resizable (slider or drag the corner) and a **Token scale** slider sets the token size on the map.
+
 ## v0.6.1
 - Fixes "Cannot use 'in' operator to search for 'rules'" errors from compendiums whose items store `system.source` as a number.
 
@@ -76,4 +79,4 @@ For a class or subclass without a `features` list, every `### Heading` becomes a
 ## SRD content
 The builder lists whatever is in your D&D5e compendiums, which already include the SRD 5.1 (2014) and SRD 5.2 (2024) races/species, backgrounds and classes. The SRDs only contain a few backgrounds (2024: Acolyte, Criminal, Sage, Soldier; 2014: Acolyte), so use **Add Custom Background** for anything else.
 
-Version: 0.6.1
+Version: 0.6.2
