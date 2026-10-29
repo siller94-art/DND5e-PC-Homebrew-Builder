@@ -1,134 +1,134 @@
-.dnd5e-pc-character-builder{--pc-line:#725d48;--pc-panel:rgba(20,18,17,.82);--pc-red:#842b2b}.dnd5e-pc-character-builder .window-content{padding:0;overflow:hidden}.pc-builder-layout{height:100%;display:grid;grid-template-columns:230px 1fr;background:linear-gradient(135deg,#24211f,#3c3732);color:#eee}.pc-builder-sidebar{padding:18px 12px;background:rgba(0,0,0,.35);border-right:1px solid var(--pc-line);overflow:auto}.pc-builder-sidebar h2{font-family:var(--dnd5e-font-modesto-condensed,serif);font-size:28px;margin:0 0 4px}.pc-builder-sidebar .progress{opacity:.7;margin-bottom:12px}.pc-builder-sidebar ol{padding-left:28px;line-height:2}.pc-builder-sidebar button{width:100%;margin-top:10px}.pc-builder-main{padding:22px;overflow:auto;display:flex;flex-direction:column;min-width:0}.pc-builder-main>header{border-bottom:2px solid var(--pc-red);margin-bottom:18px}.pc-builder-main h1,.custom-importer h1{text-transform:capitalize;font-family:var(--dnd5e-font-modesto-condensed,serif);font-size:36px;margin:2px 0 8px}.rule-cards{display:grid;grid-template-columns:1fr 1fr;gap:15px}.rule-cards label,.content-list label{border:1px solid var(--pc-line);background:var(--pc-panel);border-radius:5px;padding:14px}.rule-cards label{display:grid;grid-template-columns:auto 1fr;gap:7px 10px}.rule-cards span{grid-column:2;color:#bbb}.content-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.content-list label{display:flex;gap:10px;align-items:flex-start}.content-list label span{display:flex;flex-direction:column}.content-list small{color:#aaa}.ability-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.ability-grid label{text-align:center;font-weight:700}.ability-grid input{display:block;width:100%;height:55px;text-align:center;font-size:24px}.form-area label,.custom-importer label{display:flex;flex-direction:column;gap:5px}.form-area input,.form-area textarea,.custom-importer input,.custom-importer select,.custom-importer textarea{width:100%}.review div{display:flex;justify-content:space-between;padding:10px;border-bottom:1px solid rgba(255,255,255,.1)}.empty{padding:18px;border:1px dashed var(--pc-line)}.pc-builder-main footer{display:flex;justify-content:space-between;margin-top:auto;padding-top:18px}.primary{background:var(--pc-red)!important;color:#fff!important;border-color:#b75b5b!important}.custom-importer{padding:18px;display:flex;flex-direction:column;gap:12px;height:100%;overflow:auto}.custom-importer .import-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.custom-importer footer{display:flex;justify-content:flex-end}@media(max-width:800px){.pc-builder-layout{grid-template-columns:1fr}.pc-builder-sidebar{display:none}.rule-cards,.content-list,.ability-grid{grid-template-columns:1fr}}
+.dnd5e-pc-character-builder{--pc-line:#725d48;--pc-panel:rgba(20,18,17,.82);--pc-red:#842b2b}.dnd5e-pc-character-builder .window-content{padding:0;overflow:hidden}.dnd5e-pc-character-builder .pc-builder-layout{height:100%;display:grid;grid-template-columns:230px 1fr;background:linear-gradient(135deg,#24211f,#3c3732);color:#eee}.dnd5e-pc-character-builder .pc-builder-sidebar{padding:18px 12px;background:rgba(0,0,0,.35);border-right:1px solid var(--pc-line);overflow:auto}.dnd5e-pc-character-builder .pc-builder-sidebar h2{font-family:var(--dnd5e-font-modesto-condensed,serif);font-size:28px;margin:0 0 4px}.dnd5e-pc-character-builder .pc-builder-sidebar .progress{opacity:.7;margin-bottom:12px}.dnd5e-pc-character-builder .pc-builder-sidebar ol{padding-left:28px;line-height:2}.dnd5e-pc-character-builder .pc-builder-sidebar button{width:100%;margin-top:10px}.dnd5e-pc-character-builder .pc-builder-main{padding:22px;overflow:auto;display:flex;flex-direction:column;min-width:0}.dnd5e-pc-character-builder .pc-builder-main>header{border-bottom:2px solid var(--pc-red);margin-bottom:18px}.dnd5e-pc-character-builder .pc-builder-main h1,.dnd5e-pc-character-builder .custom-importer h1{text-transform:capitalize;font-family:var(--dnd5e-font-modesto-condensed,serif);font-size:36px;margin:2px 0 8px}.dnd5e-pc-character-builder .rule-cards{display:grid;grid-template-columns:1fr 1fr;gap:15px}.dnd5e-pc-character-builder .rule-cards label,.dnd5e-pc-character-builder .content-list label{border:1px solid var(--pc-line);background:var(--pc-panel);border-radius:5px;padding:14px}.dnd5e-pc-character-builder .rule-cards label{display:grid;grid-template-columns:auto 1fr;gap:7px 10px}.dnd5e-pc-character-builder .rule-cards span{grid-column:2;color:#bbb}.dnd5e-pc-character-builder .content-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.dnd5e-pc-character-builder .content-list label{display:flex;gap:10px;align-items:flex-start}.dnd5e-pc-character-builder .content-list label span{display:flex;flex-direction:column}.dnd5e-pc-character-builder .content-list small{color:#aaa}.dnd5e-pc-character-builder .ability-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.dnd5e-pc-character-builder .ability-grid label{text-align:center;font-weight:700}.dnd5e-pc-character-builder .ability-grid input{display:block;width:100%;height:55px;text-align:center;font-size:24px}.dnd5e-pc-character-builder .form-area label,.dnd5e-pc-character-builder .custom-importer label{display:flex;flex-direction:column;gap:5px}.dnd5e-pc-character-builder .form-area input,.dnd5e-pc-character-builder .form-area textarea,.dnd5e-pc-character-builder .custom-importer input,.dnd5e-pc-character-builder .custom-importer select,.dnd5e-pc-character-builder .custom-importer textarea{width:100%}.dnd5e-pc-character-builder .review div{display:flex;justify-content:space-between;padding:10px;border-bottom:1px solid rgba(255,255,255,.1)}.dnd5e-pc-character-builder .empty{padding:18px;border:1px dashed var(--pc-line)}.dnd5e-pc-character-builder .pc-builder-main footer{display:flex;justify-content:space-between;margin-top:auto;padding-top:18px}.dnd5e-pc-character-builder .primary{background:var(--pc-red)!important;color:#fff!important;border-color:#b75b5b!important}.dnd5e-pc-character-builder .custom-importer{padding:18px;display:flex;flex-direction:column;gap:12px;height:100%;overflow:auto}.dnd5e-pc-character-builder .custom-importer .import-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.dnd5e-pc-character-builder .custom-importer footer{display:flex;justify-content:flex-end}@media(max-width:800px){.dnd5e-pc-character-builder .pc-builder-layout{grid-template-columns:1fr}.dnd5e-pc-character-builder .pc-builder-sidebar{display:none}.dnd5e-pc-character-builder .rule-cards,.dnd5e-pc-character-builder .content-list,.dnd5e-pc-character-builder .ability-grid{grid-template-columns:1fr}}
 /* v0.4.0: step highlighting, source/edition filters, custom entries, portrait, markdown import */
-.pc-builder-sidebar li.active{color:#fff;font-weight:700;background:rgba(132,43,43,.45);border-radius:4px}
-.pc-builder-sidebar li.done{opacity:.65}
+.dnd5e-pc-character-builder .pc-builder-sidebar li.active{color:#fff;font-weight:700;background:rgba(132,43,43,.45);border-radius:4px}
+.dnd5e-pc-character-builder .pc-builder-sidebar li.done{opacity:.65}
 .dnd5e-pc-character-builder .import-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
-.source-filters{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 12px}
-.source-filters button{flex:0 0 auto;width:auto;padding:4px 10px;border:1px solid var(--pc-line);background:var(--pc-panel);color:#ddd;border-radius:14px;line-height:1.4}
-.source-filters button span{opacity:.6;margin-left:4px;font-size:.85em}
-.source-filters button.active{background:var(--pc-red);border-color:#b54848;color:#fff}
-.source-filters button.add-custom{margin-left:auto;border-style:dashed}
-.source-filters .edition-filter{display:flex;align-items:center;gap:6px;margin-right:6px;font-weight:600}
-.source-filters .edition-filter select{width:auto;min-width:130px}
-.custom-entry{display:grid;gap:8px;padding:12px;margin-bottom:12px;border:1px dashed #b54848;background:rgba(132,43,43,.15);border-radius:5px}
-.custom-entry label{display:flex;flex-direction:column;gap:4px}
-.custom-entry label.custom-pick,.custom-entry label.inline-check{flex-direction:row;align-items:center;gap:10px}
-.custom-entry label.custom-pick span{display:flex;flex-direction:column}
-.custom-entry small{color:#aaa;font-weight:400}
-.identity-area{display:grid;gap:16px}
-.portrait-row{display:grid;grid-template-columns:160px 1fr;gap:16px;align-items:start}
-.portrait-preview{width:160px;height:160px;border:1px solid var(--pc-line);border-radius:6px;background:var(--pc-panel);overflow:hidden;display:flex;align-items:center;justify-content:center}
-.portrait-preview img{width:100%;height:100%;object-fit:cover;border:0}
-.portrait-controls{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
-.portrait-controls button,.portrait-controls .upload-button{width:auto;display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border:1px solid var(--pc-line);background:var(--pc-panel);border-radius:4px;cursor:pointer}
-.portrait-controls input[name="img"]{width:100%}
-.portrait-controls small{color:#aaa}
+.dnd5e-pc-character-builder .source-filters{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 12px}
+.dnd5e-pc-character-builder .source-filters button{flex:0 0 auto;width:auto;padding:4px 10px;border:1px solid var(--pc-line);background:var(--pc-panel);color:#ddd;border-radius:14px;line-height:1.4}
+.dnd5e-pc-character-builder .source-filters button span{opacity:.6;margin-left:4px;font-size:.85em}
+.dnd5e-pc-character-builder .source-filters button.active{background:var(--pc-red);border-color:#b54848;color:#fff}
+.dnd5e-pc-character-builder .source-filters button.add-custom{margin-left:auto;border-style:dashed}
+.dnd5e-pc-character-builder .source-filters .edition-filter{display:flex;align-items:center;gap:6px;margin-right:6px;font-weight:600}
+.dnd5e-pc-character-builder .source-filters .edition-filter select{width:auto;min-width:130px}
+.dnd5e-pc-character-builder .custom-entry{display:grid;gap:8px;padding:12px;margin-bottom:12px;border:1px dashed #b54848;background:rgba(132,43,43,.15);border-radius:5px}
+.dnd5e-pc-character-builder .custom-entry label{display:flex;flex-direction:column;gap:4px}
+.dnd5e-pc-character-builder .custom-entry label.custom-pick,.dnd5e-pc-character-builder .custom-entry label.inline-check{flex-direction:row;align-items:center;gap:10px}
+.dnd5e-pc-character-builder .custom-entry label.custom-pick span{display:flex;flex-direction:column}
+.dnd5e-pc-character-builder .custom-entry small{color:#aaa;font-weight:400}
+.dnd5e-pc-character-builder .identity-area{display:grid;gap:16px}
+.dnd5e-pc-character-builder .portrait-row{display:grid;grid-template-columns:160px 1fr;gap:16px;align-items:start}
+.dnd5e-pc-character-builder .portrait-preview{width:160px;height:160px;border:1px solid var(--pc-line);border-radius:6px;background:var(--pc-panel);overflow:hidden;display:flex;align-items:center;justify-content:center}
+.dnd5e-pc-character-builder .portrait-preview img{width:100%;height:100%;object-fit:cover;border:0}
+.dnd5e-pc-character-builder .portrait-controls{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.dnd5e-pc-character-builder .portrait-controls button,.dnd5e-pc-character-builder .portrait-controls .upload-button{width:auto;display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border:1px solid var(--pc-line);background:var(--pc-panel);border-radius:4px;cursor:pointer}
+.dnd5e-pc-character-builder .portrait-controls input[name="img"]{width:100%}
+.dnd5e-pc-character-builder .portrait-controls small{color:#aaa}
 
 /* v0.5.0: ability score methods and class highlights */
-.ability-methods{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
-.ability-methods button{width:auto;flex:0 0 auto;padding:5px 12px;border:1px solid var(--pc-line);background:var(--pc-panel);color:#ddd;border-radius:14px}
-.ability-methods button.active{background:var(--pc-red);border-color:#b54848;color:#fff}
-.best-hint{margin:0 0 10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.best-hint.muted{opacity:.6}
-.best-chip{padding:2px 9px;border-radius:10px;background:rgba(57,255,20,.14);border:1px solid rgba(57,255,20,.6);color:#8dff6e;font-size:.85em;font-weight:700}
-.ability-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:12px;min-height:30px}
-.ability-toolbar button{width:auto;flex:0 0 auto;padding:4px 10px;border:1px solid var(--pc-line);background:var(--pc-panel);color:#ddd;border-radius:4px}
-.ability-toolbar .suggest{margin-left:auto;border-color:rgba(57,255,20,.6);color:#8dff6e}
-.ability-toolbar .points strong{font-size:1.2em}
-.ability-toolbar .points.done strong{color:#8dff6e}
-.rolled{display:flex;flex-wrap:wrap;gap:6px}
-.roll-chip{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border:1px solid var(--pc-line);border-radius:4px;background:var(--pc-panel);font-size:.85em}
-.roll-chip i{font-style:normal;opacity:.85}
-.roll-chip i.dropped{text-decoration:line-through;opacity:.4}
-.roll-chip b{margin-left:4px;font-size:1.1em;color:#fff}
+.dnd5e-pc-character-builder .ability-methods{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.dnd5e-pc-character-builder .ability-methods button{width:auto;flex:0 0 auto;padding:5px 12px;border:1px solid var(--pc-line);background:var(--pc-panel);color:#ddd;border-radius:14px}
+.dnd5e-pc-character-builder .ability-methods button.active{background:var(--pc-red);border-color:#b54848;color:#fff}
+.dnd5e-pc-character-builder .best-hint{margin:0 0 10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.dnd5e-pc-character-builder .best-hint.muted{opacity:.6}
+.dnd5e-pc-character-builder .best-chip{padding:2px 9px;border-radius:10px;background:rgba(57,255,20,.14);border:1px solid rgba(57,255,20,.6);color:#8dff6e;font-size:.85em;font-weight:700}
+.dnd5e-pc-character-builder .ability-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:12px;min-height:30px}
+.dnd5e-pc-character-builder .ability-toolbar button{width:auto;flex:0 0 auto;padding:4px 10px;border:1px solid var(--pc-line);background:var(--pc-panel);color:#ddd;border-radius:4px}
+.dnd5e-pc-character-builder .ability-toolbar .suggest{margin-left:auto;border-color:rgba(57,255,20,.6);color:#8dff6e}
+.dnd5e-pc-character-builder .ability-toolbar .points strong{font-size:1.2em}
+.dnd5e-pc-character-builder .ability-toolbar .points.done strong{color:#8dff6e}
+.dnd5e-pc-character-builder .rolled{display:flex;flex-wrap:wrap;gap:6px}
+.dnd5e-pc-character-builder .roll-chip{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border:1px solid var(--pc-line);border-radius:4px;background:var(--pc-panel);font-size:.85em}
+.dnd5e-pc-character-builder .roll-chip i{font-style:normal;opacity:.85}
+.dnd5e-pc-character-builder .roll-chip i.dropped{text-decoration:line-through;opacity:.4}
+.dnd5e-pc-character-builder .roll-chip b{margin-left:4px;font-size:1.1em;color:#fff}
 .dnd5e-pc-character-builder .ability-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
-.ability-card{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 10px;border:1px solid var(--pc-line);background:var(--pc-panel);border-radius:6px;transition:box-shadow .2s}
-.ability-card.best{border-color:#39ff14;background:rgba(57,255,20,.08);box-shadow:0 0 6px rgba(57,255,20,.55),inset 0 0 10px rgba(57,255,20,.12)}
-.ability-card.good{border-color:rgba(57,255,20,.35)}
-.ability-head{display:flex;flex-direction:column;align-items:center;position:relative;width:100%}
-.ability-head small{color:#aaa;font-size:.8em}
-.ability-card.best .ability-head strong{color:#8dff6e;text-shadow:0 0 6px rgba(57,255,20,.7)}
-.best-tag{position:absolute;top:-4px;right:0;font-size:.7em;font-weight:700;padding:1px 6px;border-radius:8px;background:#39ff14;color:#0b2a05}
-.pb-row{display:flex;align-items:center;gap:10px}
-.pb-row button{width:28px;height:28px;padding:0;display:flex;align-items:center;justify-content:center;border:1px solid var(--pc-line);background:rgba(0,0,0,.3);color:#ddd;border-radius:4px}
-.pb-row button:disabled{opacity:.3}
-.ability-card .score{font-size:1.8em;font-weight:700;min-width:2ch;text-align:center}
-.ability-card .score.muted{opacity:.4}
-.ability-card select,.ability-card input[type=number]{width:90px;text-align:center;font-size:1.2em}
-.ability-card .cost,.ability-card .mod{color:#bbb;font-size:.85em}
-.ability-note{margin-top:12px;color:#aaa;font-size:.85em}
+.dnd5e-pc-character-builder .ability-card{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 10px;border:1px solid var(--pc-line);background:var(--pc-panel);border-radius:6px;transition:box-shadow .2s}
+.dnd5e-pc-character-builder .ability-card.best{border-color:#39ff14;background:rgba(57,255,20,.08);box-shadow:0 0 6px rgba(57,255,20,.55),inset 0 0 10px rgba(57,255,20,.12)}
+.dnd5e-pc-character-builder .ability-card.good{border-color:rgba(57,255,20,.35)}
+.dnd5e-pc-character-builder .ability-head{display:flex;flex-direction:column;align-items:center;position:relative;width:100%}
+.dnd5e-pc-character-builder .ability-head small{color:#aaa;font-size:.8em}
+.dnd5e-pc-character-builder .ability-card.best .ability-head strong{color:#8dff6e;text-shadow:0 0 6px rgba(57,255,20,.7)}
+.dnd5e-pc-character-builder .best-tag{position:absolute;top:-4px;right:0;font-size:.7em;font-weight:700;padding:1px 6px;border-radius:8px;background:#39ff14;color:#0b2a05}
+.dnd5e-pc-character-builder .pb-row{display:flex;align-items:center;gap:10px}
+.dnd5e-pc-character-builder .pb-row button{width:28px;height:28px;padding:0;display:flex;align-items:center;justify-content:center;border:1px solid var(--pc-line);background:rgba(0,0,0,.3);color:#ddd;border-radius:4px}
+.dnd5e-pc-character-builder .pb-row button:disabled{opacity:.3}
+.dnd5e-pc-character-builder .ability-card .score{font-size:1.8em;font-weight:700;min-width:2ch;text-align:center}
+.dnd5e-pc-character-builder .ability-card .score.muted{opacity:.4}
+.dnd5e-pc-character-builder .ability-card select,.dnd5e-pc-character-builder .ability-card input[type=number]{width:90px;text-align:center;font-size:1.2em}
+.dnd5e-pc-character-builder .ability-card .cost,.dnd5e-pc-character-builder .ability-card .mod{color:#bbb;font-size:.85em}
+.dnd5e-pc-character-builder .ability-note{margin-top:12px;color:#aaa;font-size:.85em}
 
 /* v0.6.0: list toolbar, icons, badges, class colors, rarity, spells, details, review */
-.pc-builder-sidebar li[data-action]{cursor:pointer;border-radius:4px}
-.pc-builder-sidebar li[data-action]:hover{background:rgba(255,255,255,.06)}
-.list-toolbar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 8px}
-.list-toolbar input[type=search]{flex:1 1 160px;min-width:140px;height:30px}
-.list-toolbar select{width:auto;flex:0 1 auto;max-width:230px;height:30px}
-.list-toolbar .add-custom{margin-left:auto;width:auto;flex:0 0 auto;padding:4px 10px;border:1px dashed var(--pc-line);background:var(--pc-panel);color:#ddd;border-radius:14px}
-.list-toolbar .add-custom.active{border-color:#b54848;background:rgba(132,43,43,.35)}
-.edition-tabs{display:inline-flex;border:1px solid var(--pc-line);border-radius:6px;overflow:hidden}
-.edition-tabs button{width:auto;flex:0 0 auto;border:0;border-right:1px solid var(--pc-line);border-radius:0;background:var(--pc-panel);color:#ccc;padding:4px 12px;line-height:20px}
-.edition-tabs button:last-child{border-right:0}
-.edition-tabs button.active{background:var(--pc-red);color:#fff}
-.edition-tabs .srd-tab.active{background:#2f6f9f}
-.rec-legend{display:flex;align-items:center;gap:6px;margin:0 0 8px;color:#ccc;font-size:.9em}
-.rec-dot{width:10px;height:10px;border-radius:50%;background:var(--rec);box-shadow:0 0 6px var(--rec)}
-.rec-legend strong{color:var(--rec)}
-.list-note{color:#e0b060;font-size:.9em;margin:0 0 8px}
-.content-list label.pick-card{align-items:center;position:relative}
-.content-list label.is-hidden{display:none}
-.pick-icon{width:36px;height:36px;flex:0 0 36px;border:1px solid var(--pc-line);border-radius:4px;object-fit:cover;background:#111}
-.content-list label.recommended{border-color:var(--rec);box-shadow:0 0 5px color-mix(in srgb,var(--rec) 70%,transparent),inset 3px 0 0 var(--rec)}
-.content-list label.recommended strong{color:var(--rec)}
-.content-list label.has-rarity .pick-icon{border-color:var(--rarity);box-shadow:0 0 4px var(--rarity)}
-.badges{display:flex;flex-wrap:wrap;gap:4px;margin-top:3px}
-.badge{font-style:normal;font-size:.72em;font-weight:700;padding:1px 6px;border-radius:8px;border:1px solid #666;color:#ddd;background:rgba(0,0,0,.3)}
-.badge.lvl-0{border-color:#8fa3b8;color:#cfe0f0}
-.badge[class*="lvl-"]:not(.lvl-0){border-color:#b48ef0;color:#d9c4ff}
-.badge.cat{border-color:#c9a45c;color:#f0d49a}
-.badge.rarity{border-color:var(--rarity);color:var(--rarity)}
-.badge.rec{border-color:var(--rec);color:var(--rec)}
-.spell-allowance{border:1px solid var(--pc-line);background:var(--pc-panel);border-radius:6px;padding:8px 12px;margin:0 0 10px;display:flex;flex-direction:column;gap:4px}
-.spell-allowance p{margin:0}
-.sa-counters{display:flex;flex-wrap:wrap;gap:8px}
-.sa-count,.sa-slot{padding:2px 9px;border-radius:10px;border:1px solid #6a8f6a;background:rgba(80,160,80,.12)}
-.sa-slot{border-color:#666;background:rgba(0,0,0,.25)}
-.sa-count.over{border-color:#e05050;background:rgba(224,80,80,.18);color:#ffb3b3}
-.sa-count b{font-size:1.1em}
-.spell-allowance small{color:#aaa}
-.spell-allowance .sa-bonus{color:#8dff6e}
-.details-area{display:flex;flex-direction:column;gap:12px}
-.details-area fieldset{border:1px solid var(--pc-line);border-radius:6px;padding:8px 12px 12px;background:var(--pc-panel);display:flex;flex-direction:column;gap:8px}
-.details-area legend{font-weight:700;padding:0 6px}
-.details-area legend small{font-weight:400;color:#aaa}
-.details-area label{display:flex;flex-direction:column;gap:3px}
-.alignment-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
-.alignment-grid label{flex-direction:row;align-items:center;justify-content:center;padding:6px;border:1px solid var(--pc-line);border-radius:4px;cursor:pointer;text-align:center}
-.alignment-grid label input{display:none}
-.alignment-grid label.active,.alignment-grid label:has(input:checked){background:var(--pc-red);border-color:#b54848;color:#fff}
-.alignment-grid label:last-child{grid-column:1/-1}
-.detail-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
-.detail-grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}
-.details-note{color:#aaa}
-.review-row{display:grid;grid-template-columns:140px 1fr auto;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.08)}
-.review-row.missing strong{color:#e0b060}
-.review-value{display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:flex-end;text-align:right}
-.review-value>img{width:28px;height:28px;border-radius:4px;border:1px solid var(--pc-line);object-fit:cover}
-.review-chip{display:inline-flex;align-items:center;gap:4px;padding:2px 4px 2px 6px;border:1px solid var(--rarity,var(--pc-line));border-radius:12px;background:rgba(0,0,0,.25);font-size:.9em}
-.review-chip img{width:18px;height:18px;border-radius:3px;border:0}
-.review-chip em{font-style:normal;font-size:.8em;color:var(--rarity,#bbb)}
-.review-chip button{width:18px;height:18px;padding:0;line-height:16px;border:0;background:none;color:#aaa;font-size:.8em}
-.review-row .edit{width:auto;padding:3px 10px;border:1px solid var(--pc-line);background:var(--pc-panel);color:#ddd;border-radius:4px}
-.review-spells{margin-top:8px;color:#8dff6e}
-.review-spells.over{color:#ffb3b3}
+.dnd5e-pc-character-builder .pc-builder-sidebar li[data-action]{cursor:pointer;border-radius:4px}
+.dnd5e-pc-character-builder .pc-builder-sidebar li[data-action]:hover{background:rgba(255,255,255,.06)}
+.dnd5e-pc-character-builder .list-toolbar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 8px}
+.dnd5e-pc-character-builder .list-toolbar input[type=search]{flex:1 1 160px;min-width:140px;height:30px}
+.dnd5e-pc-character-builder .list-toolbar select{width:auto;flex:0 1 auto;max-width:230px;height:30px}
+.dnd5e-pc-character-builder .list-toolbar .add-custom{margin-left:auto;width:auto;flex:0 0 auto;padding:4px 10px;border:1px dashed var(--pc-line);background:var(--pc-panel);color:#ddd;border-radius:14px}
+.dnd5e-pc-character-builder .list-toolbar .add-custom.active{border-color:#b54848;background:rgba(132,43,43,.35)}
+.dnd5e-pc-character-builder .edition-tabs{display:inline-flex;border:1px solid var(--pc-line);border-radius:6px;overflow:hidden}
+.dnd5e-pc-character-builder .edition-tabs button{width:auto;flex:0 0 auto;border:0;border-right:1px solid var(--pc-line);border-radius:0;background:var(--pc-panel);color:#ccc;padding:4px 12px;line-height:20px}
+.dnd5e-pc-character-builder .edition-tabs button:last-child{border-right:0}
+.dnd5e-pc-character-builder .edition-tabs button.active{background:var(--pc-red);color:#fff}
+.dnd5e-pc-character-builder .edition-tabs .srd-tab.active{background:#2f6f9f}
+.dnd5e-pc-character-builder .rec-legend{display:flex;align-items:center;gap:6px;margin:0 0 8px;color:#ccc;font-size:.9em}
+.dnd5e-pc-character-builder .rec-dot{width:10px;height:10px;border-radius:50%;background:var(--rec);box-shadow:0 0 6px var(--rec)}
+.dnd5e-pc-character-builder .rec-legend strong{color:var(--rec)}
+.dnd5e-pc-character-builder .list-note{color:#e0b060;font-size:.9em;margin:0 0 8px}
+.dnd5e-pc-character-builder .content-list label.pick-card{align-items:center;position:relative}
+.dnd5e-pc-character-builder .content-list label.is-hidden{display:none}
+.dnd5e-pc-character-builder .pick-icon{width:36px;height:36px;flex:0 0 36px;border:1px solid var(--pc-line);border-radius:4px;object-fit:cover;background:#111}
+.dnd5e-pc-character-builder .content-list label.recommended{border-color:var(--rec);box-shadow:0 0 5px color-mix(in srgb,var(--rec) 70%,transparent),inset 3px 0 0 var(--rec)}
+.dnd5e-pc-character-builder .content-list label.recommended strong{color:var(--rec)}
+.dnd5e-pc-character-builder .content-list label.has-rarity .pick-icon{border-color:var(--rarity);box-shadow:0 0 4px var(--rarity)}
+.dnd5e-pc-character-builder .badges{display:flex;flex-wrap:wrap;gap:4px;margin-top:3px}
+.dnd5e-pc-character-builder .badge{font-style:normal;font-size:.72em;font-weight:700;padding:1px 6px;border-radius:8px;border:1px solid #666;color:#ddd;background:rgba(0,0,0,.3)}
+.dnd5e-pc-character-builder .badge.lvl-0{border-color:#8fa3b8;color:#cfe0f0}
+.dnd5e-pc-character-builder .badge[class*="lvl-"]:not(.lvl-0){border-color:#b48ef0;color:#d9c4ff}
+.dnd5e-pc-character-builder .badge.cat{border-color:#c9a45c;color:#f0d49a}
+.dnd5e-pc-character-builder .badge.rarity{border-color:var(--rarity);color:var(--rarity)}
+.dnd5e-pc-character-builder .badge.rec{border-color:var(--rec);color:var(--rec)}
+.dnd5e-pc-character-builder .spell-allowance{border:1px solid var(--pc-line);background:var(--pc-panel);border-radius:6px;padding:8px 12px;margin:0 0 10px;display:flex;flex-direction:column;gap:4px}
+.dnd5e-pc-character-builder .spell-allowance p{margin:0}
+.dnd5e-pc-character-builder .sa-counters{display:flex;flex-wrap:wrap;gap:8px}
+.dnd5e-pc-character-builder .sa-count,.dnd5e-pc-character-builder .sa-slot{padding:2px 9px;border-radius:10px;border:1px solid #6a8f6a;background:rgba(80,160,80,.12)}
+.dnd5e-pc-character-builder .sa-slot{border-color:#666;background:rgba(0,0,0,.25)}
+.dnd5e-pc-character-builder .sa-count.over{border-color:#e05050;background:rgba(224,80,80,.18);color:#ffb3b3}
+.dnd5e-pc-character-builder .sa-count b{font-size:1.1em}
+.dnd5e-pc-character-builder .spell-allowance small{color:#aaa}
+.dnd5e-pc-character-builder .spell-allowance .sa-bonus{color:#8dff6e}
+.dnd5e-pc-character-builder .details-area{display:flex;flex-direction:column;gap:12px}
+.dnd5e-pc-character-builder .details-area fieldset{border:1px solid var(--pc-line);border-radius:6px;padding:8px 12px 12px;background:var(--pc-panel);display:flex;flex-direction:column;gap:8px}
+.dnd5e-pc-character-builder .details-area legend{font-weight:700;padding:0 6px}
+.dnd5e-pc-character-builder .details-area legend small{font-weight:400;color:#aaa}
+.dnd5e-pc-character-builder .details-area label{display:flex;flex-direction:column;gap:3px}
+.dnd5e-pc-character-builder .alignment-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.dnd5e-pc-character-builder .alignment-grid label{flex-direction:row;align-items:center;justify-content:center;padding:6px;border:1px solid var(--pc-line);border-radius:4px;cursor:pointer;text-align:center}
+.dnd5e-pc-character-builder .alignment-grid label input{display:none}
+.dnd5e-pc-character-builder .alignment-grid label.active,.dnd5e-pc-character-builder .alignment-grid label:has(input:checked){background:var(--pc-red);border-color:#b54848;color:#fff}
+.dnd5e-pc-character-builder .alignment-grid label:last-child{grid-column:1/-1}
+.dnd5e-pc-character-builder .detail-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.dnd5e-pc-character-builder .detail-grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.dnd5e-pc-character-builder .details-note{color:#aaa}
+.dnd5e-pc-character-builder .review-row{display:grid;grid-template-columns:140px 1fr auto;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.08)}
+.dnd5e-pc-character-builder .review-row.missing strong{color:#e0b060}
+.dnd5e-pc-character-builder .review-value{display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:flex-end;text-align:right}
+.dnd5e-pc-character-builder .review-value>img{width:28px;height:28px;border-radius:4px;border:1px solid var(--pc-line);object-fit:cover}
+.dnd5e-pc-character-builder .review-chip{display:inline-flex;align-items:center;gap:4px;padding:2px 4px 2px 6px;border:1px solid var(--rarity,var(--pc-line));border-radius:12px;background:rgba(0,0,0,.25);font-size:.9em}
+.dnd5e-pc-character-builder .review-chip img{width:18px;height:18px;border-radius:3px;border:0}
+.dnd5e-pc-character-builder .review-chip em{font-style:normal;font-size:.8em;color:var(--rarity,#bbb)}
+.dnd5e-pc-character-builder .review-chip button{width:18px;height:18px;padding:0;line-height:16px;border:0;background:none;color:#aaa;font-size:.8em}
+.dnd5e-pc-character-builder .review-row .edit{width:auto;padding:3px 10px;border:1px solid var(--pc-line);background:var(--pc-panel);color:#ddd;border-radius:4px}
+.dnd5e-pc-character-builder .review-spells{margin-top:8px;color:#8dff6e}
+.dnd5e-pc-character-builder .review-spells.over{color:#ffb3b3}
 
 /* v0.6.2: resizable portrait */
-.portrait-row{grid-template-columns:auto 1fr}
+.dnd5e-pc-character-builder .portrait-row{grid-template-columns:auto 1fr}
 .dnd5e-pc-character-builder .portrait-preview{--portrait-size:200px;width:var(--portrait-size);height:var(--portrait-size);min-width:120px;min-height:120px;max-width:480px;max-height:480px;resize:both;overflow:hidden;position:relative}
-.portrait-preview img{transform:scale(var(--token-scale,1));transform-origin:center;transition:transform .1s}
-.portrait-controls .upload-button,.dnd5e-pc-character-builder .form-area .portrait-controls label.upload-button{flex-direction:row!important;align-items:center;gap:6px;width:auto}
-.portrait-controls .range-row{display:grid!important;grid-template-columns:90px 1fr 60px;align-items:center;gap:8px;width:100%;flex-direction:row}
-.portrait-controls .range-row input[type=range]{width:100%}
-.portrait-controls .range-row span{text-align:right;color:#ccc;font-variant-numeric:tabular-nums}
-.load-status{margin-top:14px;display:flex;flex-direction:column;gap:4px;font-size:.78em;color:#999}
-.load-status button{font-size:1em;padding:2px 8px;width:auto;align-self:flex-start;border:1px solid var(--pc-line);background:var(--pc-panel);color:#bbb;border-radius:4px}
+.dnd5e-pc-character-builder .portrait-preview img{transform:scale(var(--token-scale,1));transform-origin:center;transition:transform .1s}
+.dnd5e-pc-character-builder .portrait-controls .upload-button,.dnd5e-pc-character-builder .form-area .portrait-controls label.upload-button{flex-direction:row!important;align-items:center;gap:6px;width:auto}
+.dnd5e-pc-character-builder .portrait-controls .range-row{display:grid!important;grid-template-columns:90px 1fr 60px;align-items:center;gap:8px;width:100%;flex-direction:row}
+.dnd5e-pc-character-builder .portrait-controls .range-row input[type=range]{width:100%}
+.dnd5e-pc-character-builder .portrait-controls .range-row span{text-align:right;color:#ccc;font-variant-numeric:tabular-nums}
+.dnd5e-pc-character-builder .load-status{margin-top:14px;display:flex;flex-direction:column;gap:4px;font-size:.78em;color:#999}
+.dnd5e-pc-character-builder .load-status button{font-size:1em;padding:2px 8px;width:auto;align-self:flex-start;border:1px solid var(--pc-line);background:var(--pc-panel);color:#bbb;border-radius:4px}

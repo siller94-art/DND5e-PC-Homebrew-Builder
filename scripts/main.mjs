@@ -989,7 +989,10 @@ class CharacterBuilder extends HandlebarsApplicationMixin(ApplicationV2) {
       system: { description: { value: contentToHtml(entry.description, "markdown"), chat: "" } },
       flags: { [MODULE_ID]: { homebrew: true, rules: this.draft.rules } }
     };
-    if (step === "class") Object.assign(data.system, { identifier: this._classIdentifier(), levels: 1, hd: { denomination: entry.hitDie || "d8", spent: 0 } });
+    if (step === "class") Object.assign(data.system, {
+      identifier: this._classIdentifier(), levels: 1, hd: { denomination: entry.hitDie || "d8", spent: 0 },
+      advancement: [{ _id: foundry.utils.randomID(), type: "HitPoints", configuration: {}, value: {} }]
+    });
     if (step === "subclass") Object.assign(data.system, { identifier: foundry.utils.slugify(entry.name, { strict:true }), classIdentifier: this._classIdentifier() });
     if (entry.save && game.user?.isGM) {
       const item = await Item.create(data);
@@ -999,6 +1002,46 @@ class CharacterBuilder extends HandlebarsApplicationMixin(ApplicationV2) {
   }
 
   static customContent() { return new CustomContentImporter({parentBuilder:this}).render({ force:true }); }
+
+  /** Item data ready to add to an actor, keeping the link back to its compendium. */
+  static async itemDataFrom(uuid) {
+    const source = await fromUuid(uuid);
+    if (!source) return null;
+    if (source.pack && game.items?.fromCompendium) return game.items.fromCompendium(source, { keepId:false });
+    const data = source.toObject();
+    delete data._id;
+    return data;
+  }
+
+  /** Equip armor, shields and weapons so the sheet uses them for AC and attacks. */
+  static equipIfGear(data) {
+    const kind = data.system?.type?.value;
+    const armor = data.type === "equipment" && ["light","medium","heavy","shield"].includes(kind);
+    if ((armor || data.type === "weapon") && data.system) data.system.equipped = true;
+    return data;
+  }
+
+  /**
+   * Add an item through D&D5e's Advancement Manager (the same flow as dropping it on a sheet).
+   * Resolves true when it finishes, false if the player closes it early.
+   */
+  static async addWithAdvancement(actor, data) {
+    const AM = globalThis.dnd5e?.applications?.advancement?.AdvancementManager;
+    if (!AM) { await actor.createEmbeddedDocuments("Item", [data]); return true; }
+    const manager = AM.forNewItem(actor, data);
+    if (!manager.steps.length) { await actor.createEmbeddedDocuments("Item", [data]); return true; }
+    return new Promise(resolve => {
+      let finished = false;
+      const onComplete = Hooks.on("dnd5e.advancementManagerComplete", m => { if (m === manager) finished = true; });
+      const onClose = Hooks.on("closeAdvancementManager", app => {
+        if (app !== manager) return;
+        Hooks.off("dnd5e.advancementManagerComplete", onComplete);
+        Hooks.off("closeAdvancementManager", onClose);
+        resolve(finished);
+      });
+      manager.render(true);
+    });
+  }
 
   async _embed(actor, uuids) {
     for (const uuid of uuids.filter(Boolean)) {
@@ -1030,20 +1073,39 @@ class CharacterBuilder extends HandlebarsApplicationMixin(ApplicationV2) {
         },
         flags: { [MODULE_ID]: { rules:this.draft.rules, details:this.draft.details } }
       });
-      // Species, background, class, then subclass, so a subclass always finds its class.
-      for (const step of ["species","background","class","subclass"]) {
-        if (this.draft[step] !== CUSTOM_ID) { await this._embed(actor, [this.draft[step]]); continue; }
-        try { await actor.createEmbeddedDocuments("Item", [await this._customItemData(step)]); }
-        catch (err) { console.error(MODULE_ID, "Could not add custom " + step, err); }
+      // Hide the builder while D&D5e's Advancement Manager asks its questions.
+      this.minimize?.();
+      // Class first so the character is level 1, then subclass, species and background. Each one goes
+      // through D&D5e's Advancement Manager, which sets hit points, saves, proficiencies, skill picks,
+      // granted features and (2024) background ability score increases.
+      const skipped = [];
+      for (const step of ["class","subclass","species","background"]) {
+        const value = this.draft[step];
+        if (!value) continue;
+        let data = null;
+        try { data = value === CUSTOM_ID ? await this._customItemData(step) : await CharacterBuilder.itemDataFrom(value); }
+        catch (err) { console.error(MODULE_ID, "Could not load " + step, err); }
+        if (!data) continue;
+        const done = await CharacterBuilder.addWithAdvancement(actor, data);
+        if (!done) skipped.push(data.name);
       }
-      await this._embed(actor, [
-        ...this.draft.feats, ...this.draft.spells, ...this.draft.equipment
-      ]);
+      // Feats, spells and equipment; armor, shields and weapons are equipped so AC is calculated.
+      const extras = [];
+      for (const uuid of [...this.draft.feats, ...this.draft.spells, ...this.draft.equipment]) {
+        try { const data = await CharacterBuilder.itemDataFrom(uuid); if (data) extras.push(CharacterBuilder.equipIfGear(data)); }
+        catch (err) { console.error(MODULE_ID, "Could not add", uuid, err); }
+      }
+      if (extras.length) await actor.createEmbeddedDocuments("Item", extras);
+      // Start at full hit points.
+      const hp = actor.system.attributes?.hp;
+      if (hp && hp.max > 0 && hp.value < hp.max) await actor.update({ "system.attributes.hp.value": hp.max });
+      if (skipped.length) ui.notifications.warn("Advancement was cancelled for: " + skipped.join(", ") + ". Their choices (like hit points or skills) were not applied.");
       ui.notifications.info("Created "+actor.name+".");
       actor.sheet?.render({ force:true });
       return this.close();
     } catch (err) {
       console.error(MODULE_ID, err);
+      this.maximize?.();
       return ui.notifications.error("Character creation failed. Check the console.");
     }
   }
