@@ -22,7 +22,9 @@ jobs:
           assert manifest['id']=='dnd5e-pc-homebrew-builder'
           assert manifest['manifest'].endswith('/module.json')
           assert manifest['download'].endswith('.zip')
-          assert manifest['manifest'].split('/releases/download/')[1].split('/')[0] == 'foundry-v'+manifest['version']
+          # The manifest URL must stay stable so Foundry's "Check for Updates" always sees the newest release.
+          assert manifest['manifest'].endswith('/releases/latest/download/module.json'), manifest['manifest']
+          assert manifest['download'].split('/releases/download/')[1].split('/')[0] == 'foundry-v'+manifest['version']
           for path in manifest.get('esmodules',[])+manifest.get('styles',[]):
               assert (root/path).is_file(),path
           for entry in manifest.get('languages',[]):
@@ -45,7 +47,7 @@ jobs:
           set -euo pipefail
           TAG="foundry-v$(python3 -c 'import json;print(json.load(open("module.json"))["version"])')"
           if ! gh release view "$TAG" >/dev/null 2>&1; then
-            gh release create "$TAG" --target "$GITHUB_SHA" --title "DND5e PC Homebrew Builder $TAG" --notes "Standalone Foundry VTT PC character builder."
+            gh release create "$TAG" --latest --target "$GITHUB_SHA" --title "DND5e PC Homebrew Builder $TAG" --notes "Standalone Foundry VTT PC character builder."
           fi
           gh release upload "$TAG" module.json dnd5e-pc-homebrew-builder.zip --clobber
           curl --fail --location --retry 5 --retry-delay 3 "https://github.com/$GITHUB_REPOSITORY/releases/download/$TAG/module.json" -o /tmp/manifest.json

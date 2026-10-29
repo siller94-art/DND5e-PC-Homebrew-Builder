@@ -365,7 +365,7 @@ class CharacterBuilder extends HandlebarsApplicationMixin(ApplicationV2) {
           catch (err2) { failed.push(pack.metadata.label || pack.collection); console.error(MODULE_ID, "Could not index", pack.collection, err2); continue; }
         }
         for (const item of index) if (allTypes.includes(item.type)) rows.push(CharacterBuilder.makeRow(item, "Compendium."+pack.collection+"."+item._id, pack));
-      } catch (err) { console.debug(MODULE_ID, "Skipped pack", pack.collection); }
+      } catch (err) { failed.push(pack.metadata.label || pack.collection); console.error(MODULE_ID, "Skipped pack", pack.collection, err); }
     }
     this._failedPacks = failed;
     // Only remember a good result; if something failed, try again on the next step.

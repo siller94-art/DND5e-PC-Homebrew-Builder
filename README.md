@@ -2,6 +2,10 @@
 
 Guided player-character creation for Foundry VTT V14 and the official D&D5e system.
 
+## v0.6.4
+- **Updates now work:** the manifest URL always points at the latest release. Earlier releases pointed at their own version, so "Check for Updates" never found anything newer — reinstall once from the link below.
+- Compendiums that fail to load are named on screen instead of being skipped silently.
+
 ## v0.6.3
 - Fixes empty lists: index fields no longer clash with the ones D&D5e already indexes, a failed compendium is retried instead of remembered as empty, and unreadable compendiums are named on screen.
 
@@ -50,7 +54,7 @@ Target: Foundry VTT 14.367+ and D&D5e 6.0.x.
 Paste this into **Foundry VTT → Add-on Modules → Install Module → Manifest URL**:
 
 ```
-https://raw.githubusercontent.com/siller94-art/DND5e-PC-Homebrew-Builder/main/module.json
+https://github.com/siller94-art/DND5e-PC-Homebrew-Builder/releases/latest/download/module.json
 ```
 
 Enable the module in your D&D5e world. Open the **Actors** sidebar and click **Build Character**.
@@ -82,4 +86,4 @@ For a class or subclass without a `features` list, every `### Heading` becomes a
 ## SRD content
 The builder lists whatever is in your D&D5e compendiums, which already include the SRD 5.1 (2014) and SRD 5.2 (2024) races/species, backgrounds and classes. The SRDs only contain a few backgrounds (2024: Acolyte, Criminal, Sage, Soldier; 2014: Acolyte), so use **Add Custom Background** for anything else.
 
-Version: 0.6.3
+Version: 0.6.4
