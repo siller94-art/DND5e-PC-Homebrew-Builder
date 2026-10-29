@@ -17,6 +17,33 @@
 <label>Name<input name="name" value="{{data.name}}" placeholder="Homebrew name"></label>
 {{#if isSubclass}}<label>Which class does this subclass belong to?
 <select name="classIdentifier"><option value="">Choose a class</option>{{#each classes}}<option value="{{identifier}}" {{#if (eq ../data.classIdentifier identifier)}}selected{{/if}}>{{name}}</option>{{/each}}</select></label>{{/if}}
+{{#if hasRaw}}<p class="raw-note"><i class="fas fa-circle-check"></i> Loaded a full Foundry item from JSON — its damage, activities and other data will be kept.
+{{#if multiRaw}}<label class="inline-check"><input type="checkbox" name="importAll" {{#if importAll}}checked{{/if}}> Import all {{rawCount}} items in the file exactly as exported</label>{{/if}}</p>{{/if}}
+{{#if isClass}}
+<div class="opt-grid">
+  <label>Hit Die<select name="hitDie">{{#each hitDice}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{value}}</option>{{/each}}</select></label>
+  <label>Skills to choose<input type="number" name="skillCount" min="0" max="6" value="{{data.skillCount}}"></label>
+  <label>Identifier<input name="identifier" value="{{data.identifier}}" placeholder="auto from name"></label>
+</div>
+<div class="check-row"><strong>Saving throws</strong>{{#each saveOptions}}<label><input type="checkbox" name="opt-saves" value="{{value}}" {{#if checked}}checked{{/if}}> {{label}}</label>{{/each}}</div>
+<div class="check-row"><strong>Armor</strong>{{#each armorOptions}}<label><input type="checkbox" name="opt-armor" value="{{value}}" {{#if checked}}checked{{/if}}> {{label}}</label>{{/each}}</div>
+<div class="check-row"><strong>Weapons</strong>{{#each weaponOptions}}<label><input type="checkbox" name="opt-weapons" value="{{value}}" {{#if checked}}checked{{/if}}> {{label}}</label>{{/each}}</div>
+{{/if}}
+{{#if isRace}}<div class="opt-grid">
+  <label>Walking speed (ft)<input type="number" name="speed" min="0" step="5" value="{{data.speed}}"></label>
+  <label>Darkvision (ft, blank for none)<input type="number" name="darkvision" min="0" step="10" value="{{data.darkvision}}"></label>
+</div>{{/if}}
+{{#if isFeat}}<label>Feat category<select name="featCategory">{{#each featCategories}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}</select></label>{{/if}}
+{{#if isSpell}}<div class="opt-grid">
+  <label>Spell level<select name="spellLevel">{{#each spellLevels}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}</select></label>
+  <label>School<select name="spellSchool">{{#each spellSchools}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}</select></label>
+</div>{{/if}}
+{{#if isWeapon}}<label>Weapon type<select name="weaponType">{{#each weaponTypes}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}</select></label>{{/if}}
+{{#if isEquipment}}<div class="opt-grid">
+  <label>Equipment type<select name="equipType">{{#each equipTypes}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}</select></label>
+  {{#if isArmor}}<label>Armor Class (base)<input type="number" name="armorValue" min="0" max="30" value="{{data.armorValue}}" placeholder="e.g. 14"></label>{{/if}}
+</div>{{/if}}
+{{#if isItem}}<label>Rarity<select name="rarity">{{#each rarities}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}</select></label>{{/if}}
 {{#if isClassLike}}<label>Class / Subclass Features<textarea name="featureNames" rows="6" placeholder="One feature per line">{{data.featureNames}}</textarea></label>{{/if}}
 <label>Content format
 <select name="format">

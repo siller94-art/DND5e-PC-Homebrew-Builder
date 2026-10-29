@@ -2,6 +2,17 @@
 
 Guided player-character creation for Foundry VTT V14 and the official D&D5e system.
 
+## v0.8.0 — custom content audit
+Every custom content path was checked and fixed:
+- **Custom class** (inline or Custom Content): hit die, saving throws, armor and weapon proficiencies and number of skill choices. These become real D&D5e advancements, so the class gives HP, proficient saves and skill picks. Classes made in Custom Content used to give 0 HP.
+- **Custom species:** walking speed and darkvision.
+- **Custom spell:** level (cantrip–9th) and school; it used to always be 1st level.
+- **Custom weapon / armor / items:** weapon type, armor type and base AC (armor now counts toward AC), and rarity. Loot and Container types added.
+- **Custom feat:** category (Origin, General, Fighting Style, Epic Boon).
+- **JSON import:** a Foundry item export keeps all of its data (damage, activities, effects…). Files with several items can import them all at once. Unknown types no longer turn into "Species / Race".
+- **Markdown front matter** can also set `level`, `school`, `rarity`, `hitdie`, `saves`, `speed`, `darkvision`, `category`, `weapontype`, `armor` and `ac`.
+- Choosing "Use custom …" without a name now sends you back to that step instead of breaking creation.
+
 ## v0.7.1
 - Fixes character creation stopping after the class: the builder no longer waits on a close signal Foundry may not send, so species, background, feats, spells and equipment are always added.
 - If an Advancement window is cancelled, that item is still added to the sheet (its choices just aren't applied).
@@ -96,7 +107,9 @@ Children of the **reef**.
 
 For a class or subclass without a `features` list, every `### Heading` becomes a linked feature.
 
+More front matter keys by type: spells `level: cantrip|1-9`, `school: evocation`; items `rarity: very rare`, `weapontype: martial melee`, `armor: medium`, `ac: 14`; classes `hitdie: d10`, `saves: [con, wis]`; species `speed: 30`, `darkvision: 60`; feats `category: origin`.
+
 ## SRD content
 The builder lists whatever is in your D&D5e compendiums, which already include the SRD 5.1 (2014) and SRD 5.2 (2024) races/species, backgrounds and classes. The SRDs only contain a few backgrounds (2024: Acolyte, Criminal, Sage, Soldier; 2014: Acolyte), so use **Add Custom Background** for anything else.
 
-Version: 0.7.1
+Version: 0.8.0

@@ -225,9 +225,9 @@ class CharacterBuilder extends HandlebarsApplicationMixin(ApplicationV2) {
     this.draft = {
       rules: "2024", name: "", img: "", portraitSize: 200, tokenScale: 1, species: "",
       custom: {
-        species: { name: "", description: "", save: false },
+        species: { name: "", description: "", save: false, speed: "30", darkvision: "" },
         background: { name: "", description: "", save: false },
-        class: { name: "", description: "", save: false, hitDie: "d8" },
+        class: { name: "", description: "", save: false, hitDie: "d8", saves: [], armor: [], weapons: [], skillCount: 2 },
         subclass: { name: "", description: "", save: false }
       }, background: "", class: "", subclass: "",
       abilities: { str:10, dex:10, con:10, int:10, wis:10, cha:10 },
@@ -320,6 +320,9 @@ class CharacterBuilder extends HandlebarsApplicationMixin(ApplicationV2) {
       recFor: [this._selectedClassName || (this.draft.class === CUSTOM_ID ? this.draft.custom.class.name : ""), step === "feats" ? SPECIES_NAMES[this._speciesKey()] : ""].filter(Boolean).join(" / "),
       recommendedCount: rows.filter(r => r.recommended && !r.hidden).length,
       hitDice: ["d6","d8","d10","d12"].map(d => ({ value:d, selected: d === this.draft.custom.class.hitDie })),
+      customSaves: checkOptions(Object.fromEntries(ABILITY_KEYS.map(k => [k, ABILITY_NAMES[k]])), this.draft.custom.class.saves),
+      customArmor: checkOptions(ARMOR_PROFS, this.draft.custom.class.armor),
+      customWeapons: checkOptions(WEAPON_PROFS, this.draft.custom.class.weapons),
       customStep, custom: customStep ? this.draft.custom[step] : null,
       customSelected: !!customStep && this.draft[step] === CUSTOM_ID,
       showCustom: !!customStep && (this.showCustom[step] || this.draft[step] === CUSTOM_ID),
@@ -561,6 +564,13 @@ class CharacterBuilder extends HandlebarsApplicationMixin(ApplicationV2) {
       if (get("customName") !== undefined) custom.name = get("customName").trim();
       if (get("customDescription") !== undefined) custom.description = get("customDescription");
       if (get("customHitDie") !== undefined) custom.hitDie = get("customHitDie");
+      if (get("customSkillCount") !== undefined) custom.skillCount = Number(get("customSkillCount")) || 0;
+      if (get("customSpeed") !== undefined) custom.speed = get("customSpeed").trim();
+      if (get("customDarkvision") !== undefined) custom.darkvision = get("customDarkvision").trim();
+      for (const key of ["saves","armor","weapons"]) {
+        const boxes = root.querySelectorAll('input[name="custom-'+key+'"]');
+        if (boxes.length) custom[key] = [...boxes].filter(b => b.checked).map(b => b.value);
+      }
       const save = root.querySelector('[name="customSave"]');
       if (save) custom.save = save.checked;
     }
@@ -989,10 +999,15 @@ class CharacterBuilder extends HandlebarsApplicationMixin(ApplicationV2) {
       system: { description: { value: contentToHtml(entry.description, "markdown"), chat: "" } },
       flags: { [MODULE_ID]: { homebrew: true, rules: this.draft.rules } }
     };
+    data.system.source = { book:"Homebrew", rules:this.draft.rules };
     if (step === "class") Object.assign(data.system, {
       identifier: this._classIdentifier(), levels: 1, hd: { denomination: entry.hitDie || "d8", spent: 0 },
-      advancement: [{ _id: foundry.utils.randomID(), type: "HitPoints", configuration: {}, value: {} }]
+      advancement: classAdvancements(entry)
     });
+    if (step === "species") {
+      if (entry.speed) data.system.movement = { speeds: { walk: String(entry.speed) } };
+      if (Number(entry.darkvision) > 0) data.system.senses = { ranges: { darkvision: Number(entry.darkvision) } };
+    }
     if (step === "subclass") Object.assign(data.system, { identifier: foundry.utils.slugify(entry.name, { strict:true }), classIdentifier: this._classIdentifier() });
     if (entry.save && game.user?.isGM) {
       const item = await Item.create(data);
@@ -1068,6 +1083,12 @@ class CharacterBuilder extends HandlebarsApplicationMixin(ApplicationV2) {
   static async createCharacter() {
     this._collect();
     if (!this.draft.name) return ui.notifications.warn("Enter a character name.");
+    for (const [step, info] of Object.entries(CUSTOM_STEPS)) {
+      if (this.draft[step] === CUSTOM_ID && !this.draft.custom[step].name) {
+        this.stepIndex = STEPS.indexOf(step); this.render({ force:true });
+        return ui.notifications.warn("Give your custom " + info.label.toLowerCase() + " a name first.");
+      }
+    }
     this._applyAbilityMethod();
     try {
       const abilities = {};
@@ -1144,9 +1165,41 @@ class CharacterBuilder extends HandlebarsApplicationMixin(ApplicationV2) {
 const CONTENT_TYPES = [
   {value:"race",label:"Species / Race"},{value:"background",label:"Background"},{value:"class",label:"Class"},
   {value:"subclass",label:"Subclass"},{value:"feat",label:"Feat / Feature"},{value:"spell",label:"Spell"},
-  {value:"equipment",label:"Equipment"},{value:"weapon",label:"Weapon"},{value:"tool",label:"Tool"},{value:"consumable",label:"Consumable"}
+  {value:"equipment",label:"Armor / Equipment"},{value:"weapon",label:"Weapon"},{value:"tool",label:"Tool"},{value:"consumable",label:"Consumable"},
+  {value:"loot",label:"Loot / Gear"},{value:"container",label:"Container"}
 ];
-const TYPE_ALIASES = { species:"race", race:"race", feature:"feat", feat:"feat", item:"equipment", armor:"equipment", gear:"equipment" };
+const TYPE_ALIASES = { species:"race", race:"race", feature:"feat", feat:"feat", item:"equipment", armor:"equipment", gear:"loot", backpack:"container" };
+const ITEM_TYPES = ["equipment","weapon","tool","consumable","loot","container"];
+const SKILLS = { acr:"Acrobatics", ani:"Animal Handling", arc:"Arcana", ath:"Athletics", dec:"Deception", his:"History", ins:"Insight", itm:"Intimidation", inv:"Investigation",
+  med:"Medicine", nat:"Nature", prc:"Perception", prf:"Performance", per:"Persuasion", rel:"Religion", slt:"Sleight of Hand", ste:"Stealth", sur:"Survival" };
+const ARMOR_PROFS = { lgt:"Light", med:"Medium", hvy:"Heavy", shl:"Shields" };
+const WEAPON_PROFS = { sim:"Simple", mar:"Martial" };
+const SPELL_SCHOOLS = { abj:"Abjuration", con:"Conjuration", div:"Divination", enc:"Enchantment", evo:"Evocation", ill:"Illusion", nec:"Necromancy", trs:"Transmutation" };
+const WEAPON_TYPES = { simpleM:"Simple Melee", simpleR:"Simple Ranged", martialM:"Martial Melee", martialR:"Martial Ranged" };
+const EQUIPMENT_TYPES = { light:"Light Armor", medium:"Medium Armor", heavy:"Heavy Armor", shield:"Shield", clothing:"Clothing", ring:"Ring", rod:"Rod", wand:"Wand", trinket:"Trinket", wondrous:"Wondrous Item" };
+
+/** D&D5e stores advancements as an object keyed by id. */
+function advancementMap(list) {
+  return Object.fromEntries(list.map(a => { const id = foundry.utils.randomID(); return [id, { _id:id, ...a }]; }));
+}
+
+/** Level 1 advancements for a homebrew class: hit points, saves, armor/weapon proficiencies, skill picks. */
+function classAdvancements({ saves=[], armor=[], weapons=[], skillCount=2 }={}) {
+  const list = [{ type:"HitPoints", configuration:{}, title:"Hit Points" }];
+  if (saves.length) list.push({ type:"Trait", level:1, classRestriction:"primary", title:"Saving Throws",
+    configuration:{ mode:"default", allowReplacements:false, grants:saves.map(k => "saves:"+k), choices:[] } });
+  if (Number(skillCount) > 0) list.push({ type:"Trait", level:1, classRestriction:"primary", title:"Skills",
+    configuration:{ mode:"default", allowReplacements:false, grants:[], choices:[{ count:Number(skillCount), pool:Object.keys(SKILLS).map(k => "skills:"+k) }] } });
+  if (weapons.length) list.push({ type:"Trait", level:1, classRestriction:"primary", title:"Weapon Proficiencies",
+    configuration:{ mode:"default", allowReplacements:false, grants:weapons.map(k => "weapon:"+k), choices:[] } });
+  if (armor.length) list.push({ type:"Trait", level:1, title:"Armor Training",
+    configuration:{ mode:"default", allowReplacements:false, grants:armor.map(k => "armor:"+k), choices:[] } });
+  return advancementMap(list);
+}
+
+/** Options for a set of checkboxes. */
+function checkOptions(map, chosen) { return Object.entries(map).map(([value, label]) => ({ value, label, checked:(chosen || []).includes(value) })); }
+function selectOptions(map, chosen) { return Object.entries(map).map(([value, label]) => ({ value, label, selected:String(chosen) === String(value) })); }
 
 function escapeHtml(text) {
   return String(text).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
@@ -1242,7 +1295,12 @@ class CustomContentImporter extends HandlebarsApplicationMixin(ApplicationV2) {
 
   constructor(options={}) {
     super(options);
-    this.data = { rules:options.rules || "2024", type:options.type || "feat", name:"", description:"", format:"markdown", identifier:"", classIdentifier:"", featureNames:"" };
+    this.data = { rules:options.rules || "2024", type:options.type || "feat", name:"", description:"", format:"markdown", identifier:"", classIdentifier:"", featureNames:"",
+      hitDie:"d8", saves:[], armor:[], weapons:[], skillCount:2, featCategory:"", spellLevel:"1", spellSchool:"evo",
+      weaponType:"simpleM", equipType:"light", armorValue:"", rarity:"", speed:"30", darkvision:"" };
+    this.raw = null;       // full item data from a JSON file, kept so nothing is lost
+    this.rawList = [];     // every item in that JSON file
+    this.importAll = false;
     this.parentBuilder = options.parentBuilder || null;
     this.selectStep = options.selectStep || null;
   }
@@ -1257,9 +1315,23 @@ class CustomContentImporter extends HandlebarsApplicationMixin(ApplicationV2) {
         for (const i of idx) if (i.type === "class") classes.push({ name:i.name, identifier:i.system?.identifier || foundry.utils.slugify(i.name,{strict:true}) });
       } catch (err) { console.debug(MODULE_ID, "Skipped pack", pack.collection); }
     }
+    const d = this.data;
+    const types = CONTENT_TYPES.some(t => t.value === d.type) ? CONTENT_TYPES : [...CONTENT_TYPES, { value:d.type, label:d.type }];
     return {
-      data:this.data, types:CONTENT_TYPES,
-      isClassLike:["class","subclass"].includes(this.data.type), isSubclass:this.data.type === "subclass",
+      data:d, types,
+      isClassLike:["class","subclass"].includes(d.type), isSubclass:d.type === "subclass",
+      isClass:d.type === "class", isFeat:d.type === "feat", isSpell:d.type === "spell", isRace:d.type === "race",
+      isWeapon:d.type === "weapon", isEquipment:d.type === "equipment", isItem:ITEM_TYPES.includes(d.type),
+      isArmor:d.type === "equipment" && ["light","medium","heavy","shield"].includes(d.equipType),
+      hitDice:["d6","d8","d10","d12"].map(v => ({ value:v, selected:v === d.hitDie })),
+      saveOptions:checkOptions(Object.fromEntries(ABILITY_KEYS.map(k => [k, ABILITY_NAMES[k]])), d.saves),
+      armorOptions:checkOptions(ARMOR_PROFS, d.armor), weaponOptions:checkOptions(WEAPON_PROFS, d.weapons),
+      featCategories:FEAT_CATEGORIES.map(c => ({ ...c, label:c.value ? c.label : "General feature", selected:c.value === d.featCategory })),
+      spellLevels:[0,1,2,3,4,5,6,7,8,9].map(n => ({ value:String(n), label:n === 0 ? "Cantrip" : ordinal(n) + " Level", selected:String(n) === String(d.spellLevel) })),
+      spellSchools:selectOptions(SPELL_SCHOOLS, d.spellSchool), weaponTypes:selectOptions(WEAPON_TYPES, d.weaponType),
+      equipTypes:selectOptions(EQUIPMENT_TYPES, d.equipType),
+      rarities:[{ value:"", label:"Mundane", selected:!d.rarity }, ...Object.entries(RARITIES).map(([value, r]) => ({ value, label:r.label, selected:value === d.rarity }))],
+      hasRaw:!!this.raw, rawCount:this.rawList.length, multiRaw:this.rawList.length > 1, importAll:this.importAll,
       classes:classes.filter((x,i,a)=>a.findIndex(y=>y.identifier===x.identifier)===i).sort((a,b)=>a.name.localeCompare(b.name))
     };
   }
@@ -1271,16 +1343,24 @@ class CustomContentImporter extends HandlebarsApplicationMixin(ApplicationV2) {
     el.querySelector('[name="pdf"]')?.addEventListener("change", e => this._loadPdf(e));
     el.querySelector('[name="markdown"]')?.addEventListener("change", e => this._loadMarkdown(e));
     el.querySelector('[name="type"]')?.addEventListener("change", e => { this._collect(); this.data.type = e.target.value; this.render({ force:true }); });
+    el.querySelector('[name="equipType"]')?.addEventListener("change", e => { this._collect(); this.render({ force:true }); });
   }
 
   _collect() {
     const el = this.element;
     const rules = el.querySelector('[name="rules"]:checked');
     if (rules) this.data.rules = rules.value;
-    for (const key of ["type","name","description","format","identifier","classIdentifier","featureNames"]) {
+    for (const key of ["type","name","description","format","identifier","classIdentifier","featureNames","hitDie","skillCount",
+      "featCategory","spellLevel","spellSchool","weaponType","equipType","armorValue","rarity","speed","darkvision"]) {
       const field = el.querySelector('[name="'+key+'"]');
       if (field) this.data[key] = field.value;
     }
+    for (const key of ["saves","armor","weapons"]) {
+      const boxes = el.querySelectorAll('input[name="opt-'+key+'"]');
+      if (boxes.length) this.data[key] = [...boxes].filter(b => b.checked).map(b => b.value);
+    }
+    const all = el.querySelector('[name="importAll"]');
+    if (all) this.importAll = all.checked;
   }
 
   async _loadJson(event) {
@@ -1288,7 +1368,13 @@ class CustomContentImporter extends HandlebarsApplicationMixin(ApplicationV2) {
     this._collect();
     try {
       const raw = JSON.parse(await file.text());
-      const value = Array.isArray(raw) ? raw[0] : (raw.items?.[0] || raw);
+      const list = (Array.isArray(raw) ? raw : (Array.isArray(raw.items) ? raw.items : [raw])).filter(x => x && typeof x === "object" && x.name);
+      if (!list.length) return ui.notifications.warn("No items with a name were found in that JSON file.");
+      const value = list[0];
+      // A Foundry item export keeps its full system data (damage, activities…) when saved.
+      this.rawList = list.filter(x => x.system && x.type);
+      this.raw = this.rawList.includes(value) ? value : null;
+      this.importAll = this.rawList.length > 1;
       this.data.type = TYPE_ALIASES[value.type] || value.type || this.data.type;
       this.data.name = value.name || "";
       this.data.description = value.system?.description?.value || value.description || "";
@@ -1296,9 +1382,18 @@ class CustomContentImporter extends HandlebarsApplicationMixin(ApplicationV2) {
       this.data.identifier = value.system?.identifier || value.identifier || "";
       this.data.classIdentifier = value.system?.classIdentifier || value.classIdentifier || "";
       this.data.featureNames = (value.features || value.classFeatures || value.subclassFeatures || []).map(x => typeof x === "string" ? x : x.name).filter(Boolean).join("\n");
-      this.data.rules = value.flags?.[MODULE_ID]?.rules || this.data.rules;
+      const rules = value.flags?.[MODULE_ID]?.rules || value.system?.source?.rules;
+      if (["2014","2024"].includes(String(rules))) this.data.rules = String(rules);
       return this.render({ force:true });
-    } catch (err) { return ui.notifications.error("Could not read JSON."); }
+    } catch (err) { console.error(MODULE_ID, err); return ui.notifications.error("Could not read JSON: " + err.message); }
+  }
+
+  /** Clean a Foundry item export so it can be created as a new world item. */
+  static cleanRaw(raw) {
+    const data = foundry.utils.deepClone(raw);
+    for (const key of ["_id","folder","sort","ownership","_stats"]) delete data[key];
+    if (data.type && TYPE_ALIASES[data.type] && !game.system?.documentTypes?.Item?.[data.type]) data.type = TYPE_ALIASES[data.type];
+    return data;
   }
 
   async _loadPdf(event) {
@@ -1355,6 +1450,19 @@ class CustomContentImporter extends HandlebarsApplicationMixin(ApplicationV2) {
       if (features.length) this.data.featureNames = features.map(x=>String(x).trim()).filter(Boolean).join("\n");
       this.data.description = text;
       this.data.format = "markdown";
+      // Optional type-specific front matter: level, school, rarity, hitdie, saves, speed, darkvision, category, weapontype, equiptype, ac.
+      const lower = v => String(v ?? "").toLowerCase().trim();
+      if (meta.level !== undefined) this.data.spellLevel = /cantrip/.test(lower(meta.level)) ? "0" : String(parseInt(meta.level) || 0);
+      if (meta.school) { const sc = lower(meta.school); this.data.spellSchool = Object.keys(SPELL_SCHOOLS).find(k => k === sc || SPELL_SCHOOLS[k].toLowerCase() === sc) || this.data.spellSchool; }
+      if (meta.rarity) { const r = lower(meta.rarity).replace(/\s+/g, ""); this.data.rarity = Object.keys(RARITIES).find(k => k.toLowerCase() === r) || ""; }
+      if (meta.hitdie || meta.hit_die) this.data.hitDie = "d" + String(meta.hitdie || meta.hit_die).replace(/^1?d/i, "");
+      if (meta.saves) this.data.saves = (Array.isArray(meta.saves) ? meta.saves : String(meta.saves).split(",")).map(x => lower(x).slice(0,3)).filter(k => ABILITY_KEYS.includes(k));
+      if (meta.speed) this.data.speed = String(parseInt(meta.speed) || 30);
+      if (meta.darkvision) this.data.darkvision = String(parseInt(meta.darkvision) || "");
+      if (meta.category) { const c = lower(meta.category).replace(/[^a-z]/g, ""); this.data.featCategory = { origin:"origin", general:"general", fightingstyle:"fightingStyle", epicboon:"epicBoon" }[c] || ""; }
+      if (meta.weapontype) { const w = lower(meta.weapontype).replace(/[^a-z]/g, ""); this.data.weaponType = Object.keys(WEAPON_TYPES).find(k => k.toLowerCase() === w || WEAPON_TYPES[k].toLowerCase().replace(/[^a-z]/g, "") === w) || this.data.weaponType; }
+      if (meta.equiptype || meta.armor) { const e = lower(meta.equiptype || meta.armor).replace(/ armor$/, ""); this.data.equipType = Object.keys(EQUIPMENT_TYPES).find(k => k === e) || this.data.equipType; }
+      if (meta.ac) this.data.armorValue = String(parseInt(meta.ac) || "");
       return this.render({ force:true });
     } catch (err) {
       console.error(MODULE_ID, "Markdown import failed", err);
@@ -1362,37 +1470,84 @@ class CustomContentImporter extends HandlebarsApplicationMixin(ApplicationV2) {
     }
   }
 
+  /** Build the system data for the chosen type from the form. */
+  _systemData() {
+    const d = this.data;
+    const system = { description:{ value:contentToHtml(d.description, d.format), chat:"" }, source:{ book:"Homebrew", rules:d.rules } };
+    if (["class","subclass"].includes(d.type)) system.identifier = d.identifier || foundry.utils.slugify(d.name, { strict:true });
+    if (d.type === "subclass") system.classIdentifier = d.classIdentifier;
+    if (d.type === "class") Object.assign(system, { levels:1, hd:{ denomination:d.hitDie || "d8", spent:0 } });
+    if (d.type === "feat") system.type = { value:"feat", subtype:d.featCategory || "" };
+    if (d.type === "spell") Object.assign(system, { level:Number(d.spellLevel) || 0, school:d.spellSchool || "evo" });
+    if (d.type === "race") {
+      if (d.speed) system.movement = { speeds:{ walk:String(d.speed) } };
+      if (Number(d.darkvision) > 0) system.senses = { ranges:{ darkvision:Number(d.darkvision) } };
+    }
+    if (d.type === "weapon") system.type = { value:d.weaponType || "simpleM" };
+    if (d.type === "equipment") {
+      system.type = { value:d.equipType || "trinket" };
+      if (d.armorValue !== "" && ["light","medium","heavy","shield"].includes(d.equipType)) system.armor = { value:Number(d.armorValue) || 0 };
+    }
+    if (ITEM_TYPES.includes(d.type) && d.rarity) system.rarity = d.rarity;
+    return system;
+  }
+
   static async save() {
     this._collect();
-    if (!this.data.name.trim()) return ui.notifications.warn("Enter a content name.");
-    const system = { description:{ value:contentToHtml(this.data.description, this.data.format), chat:"" } };
-    if (["class","subclass"].includes(this.data.type)) system.identifier = this.data.identifier || foundry.utils.slugify(this.data.name,{strict:true});
-    if (this.data.type === "feat") system.type = { value:"feat", subtype:"" };
-    if (this.data.type === "subclass") {
-      if (!this.data.classIdentifier) return ui.notifications.warn("Choose the class this subclass belongs to.");
-      system.classIdentifier = this.data.classIdentifier;
-    }
+    const d = this.data;
+    if (!d.name.trim()) return ui.notifications.warn("Enter a content name.");
+    if (d.type === "subclass" && !d.classIdentifier) return ui.notifications.warn("Choose the class this subclass belongs to.");
     try {
-      const createdFeatures = [];
-      if (["class","subclass"].includes(this.data.type)) {
-        const parentId = this.data.type === "class" ? system.identifier : this.data.classIdentifier;
-        for (const name of this.data.featureNames.split(/\r?\n|,/).map(x=>x.trim()).filter(Boolean)) {
-          const feature = await Item.create({ name, type:"feat", system:{ description:{ value:"", chat:"" }, type:{ value:"class", subtype:"" } }, flags:{ [MODULE_ID]:{ homebrew:true, rules:this.data.rules, featureOf:parentId, featureKind:this.data.type } } });
-          createdFeatures.push(feature);
+      const created = [];
+      if (this.importAll && this.rawList.length > 1) {
+        // Import every item from the JSON file exactly as exported.
+        for (const raw of this.rawList) {
+          const data = CustomContentImporter.cleanRaw(raw);
+          foundry.utils.setProperty(data, "flags."+MODULE_ID+".homebrew", true);
+          foundry.utils.setProperty(data, "flags."+MODULE_ID+".rules", d.rules);
+          try { created.push(await Item.create(data)); }
+          catch (err) { console.error(MODULE_ID, "Could not import", raw.name, err); ui.notifications.warn("Skipped " + raw.name + ": " + err.message); }
         }
-        if (createdFeatures.length) system.advancement = [{ _id:foundry.utils.randomID(), type:"ItemGrant", configuration:{ items:createdFeatures.map((x,i)=>({ uuid:x.uuid, optional:false, sort:i*10000 })), optional:false, sorting:"m", spell:null }, value:{ ability:null, added:{} }, level:1, title:this.data.type === "class" ? "Class Features" : "Subclass Features", icon:"" }];
+      } else {
+        const system = this._systemData();
+        const createdFeatures = [];
+        if (["class","subclass"].includes(d.type)) {
+          const parentId = d.type === "class" ? system.identifier : d.classIdentifier;
+          for (const name of d.featureNames.split(/\r?\n|,/).map(x => x.trim()).filter(Boolean)) {
+            createdFeatures.push(await Item.create({ name, type:"feat", system:{ description:{ value:"", chat:"" }, type:{ value:"class", subtype:"" }, source:{ book:"Homebrew", rules:d.rules } },
+              flags:{ [MODULE_ID]:{ homebrew:true, rules:d.rules, featureOf:parentId, featureKind:d.type } } }));
+          }
+        }
+        let advancement = {};
+        if (d.type === "class") advancement = classAdvancements(d);
+        if (createdFeatures.length) Object.assign(advancement, advancementMap([{ type:"ItemGrant", level:1, title:d.type === "class" ? "Class Features" : "Subclass Features",
+          configuration:{ items:createdFeatures.map((x, i) => ({ uuid:x.uuid, optional:false, sort:i * 10000 })), optional:false, sorting:"m", spell:null } }]));
+        if (Object.keys(advancement).length) system.advancement = advancement;
+        // Keep everything from an imported Foundry item (damage, activities…), with the form's edits on top.
+        let data = { name:d.name.trim(), type:d.type, system, flags:{ [MODULE_ID]:{ homebrew:true, rules:d.rules } } };
+        if (this.raw && (TYPE_ALIASES[this.raw.type] || this.raw.type) === d.type) {
+          const base = CustomContentImporter.cleanRaw(this.raw);
+          data = foundry.utils.mergeObject(base, data, { inplace:false });
+          data.type = d.type;
+        }
+        created.push(await Item.create(data));
+        if (createdFeatures.length) ui.notifications.info("Created " + createdFeatures.length + " linked features. Open each one to fill in its details.");
       }
-      const item = await Item.create({ name:this.data.name.trim(), type:this.data.type, system, flags:{ [MODULE_ID]:{ homebrew:true, rules:this.data.rules } } });
-      ui.notifications.info("Added "+item.name+(createdFeatures.length ? " with "+createdFeatures.length+" linked features" : "")+" to the character builder.");
+      const items = created.filter(Boolean);
+      if (!items.length) return ui.notifications.error("Nothing was created. Check the console (F12).");
+      ui.notifications.info("Added " + (items.length === 1 ? items[0].name : items.length + " items") + " to the character builder.");
       if (this.parentBuilder) {
         this.parentBuilder._packCache = null;
         const step = this.selectStep;
-        if (step && Array.isArray(this.parentBuilder.draft[step])) this.parentBuilder.draft[step].push(item.uuid);
+        if (step && Array.isArray(this.parentBuilder.draft[step])) this.parentBuilder.draft[step].push(...items.map(i => i.uuid));
         await this.parentBuilder.render({ force:true });
       }
       await this.close();
-      return item.sheet?.render({ force:true });
-    } catch (err) { console.error(MODULE_ID, err); return ui.notifications.error("D&D5e rejected this custom content."); }
+      if (items.length === 1) return items[0].sheet?.render({ force:true });
+    } catch (err) {
+      console.error(MODULE_ID, err);
+      return ui.notifications.error("D&D5e rejected this custom content: " + err.message);
+    }
   }
 }
 function addBuildButton(app, html) {

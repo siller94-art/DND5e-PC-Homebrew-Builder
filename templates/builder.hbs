@@ -82,7 +82,21 @@
 <section class="custom-entry">
 <label class="custom-pick"><input type="radio" name="{{step}}" value="__custom__" {{#if customSelected}}checked{{/if}}><span><strong>Use custom {{customStep.label}}</strong><small>Homebrew · {{customStep.type}}</small></span></label>
 <label>{{customStep.label}} Name<input name="customName" value="{{custom.name}}" placeholder="e.g. Coralborn"></label>
-{{#if customStep.hitDie}}<label>Hit Die<select name="customHitDie">{{#each hitDice}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{value}}</option>{{/each}}</select></label>{{/if}}
+{{#if customStep.hitDie}}
+<div class="custom-grid">
+  <label>Hit Die<select name="customHitDie">{{#each hitDice}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{value}}</option>{{/each}}</select></label>
+  <label>Skills to choose<input type="number" name="customSkillCount" min="0" max="6" value="{{custom.skillCount}}"></label>
+</div>
+<div class="check-row"><strong>Saving throws</strong>{{#each customSaves}}<label><input type="checkbox" name="custom-saves" value="{{value}}" {{#if checked}}checked{{/if}}> {{label}}</label>{{/each}}</div>
+<div class="check-row"><strong>Armor</strong>{{#each customArmor}}<label><input type="checkbox" name="custom-armor" value="{{value}}" {{#if checked}}checked{{/if}}> {{label}}</label>{{/each}}</div>
+<div class="check-row"><strong>Weapons</strong>{{#each customWeapons}}<label><input type="checkbox" name="custom-weapons" value="{{value}}" {{#if checked}}checked{{/if}}> {{label}}</label>{{/each}}</div>
+{{/if}}
+{{#if (eq step "species")}}
+<div class="custom-grid">
+  <label>Walking speed (ft)<input type="number" name="customSpeed" min="0" step="5" value="{{custom.speed}}"></label>
+  <label>Darkvision (ft, blank for none)<input type="number" name="customDarkvision" min="0" step="10" value="{{custom.darkvision}}"></label>
+</div>
+{{/if}}
 <label>Description <small>(Markdown supported)</small><textarea name="customDescription" rows="6" placeholder="{{customStep.placeholder}}">{{custom.description}}</textarea></label>
 {{#if isGM}}<label class="inline-check"><input type="checkbox" name="customSave" {{#if custom.save}}checked{{/if}}> Also save to the world so it can be reused</label>{{/if}}
 </section>
